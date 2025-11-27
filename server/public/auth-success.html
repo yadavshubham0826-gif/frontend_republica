@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication Success</title>
+</head>
+<body>
+    <script>
+        const userData = USER_DATA_PLACEHOLDER; // This will be replaced by the server
+
+        if (window.opener) {
+            window.opener.postMessage({ type: 'authSuccess', user: userData }, '*');
+        }
+        window.close();
+    </script>
+</body>
+</html>

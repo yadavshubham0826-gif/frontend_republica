@@ -1,0 +1,114 @@
+├── .env
+├── .gitignore
+├── assets
+│   ├── css
+│   ├── images
+│   │   ├── drc_main.jpg
+│   │   ├── facebook.jpg
+│   │   ├── insta.jpg
+│   │   └── x.jpg
+│   └── js
+├── firebase.json
+├── index.html
+├── Notifications.css
+├── package-lock.json
+├── package.json
+├── public
+│   └── favicon.ico
+├── README.md
+├── scripts.js
+├── server
+│   ├── .gitignore
+│   ├── config
+│   │   ├── cloudinary.js
+│   │   ├── database.js
+│   │   └── passport.js
+│   ├── models
+│   │   └── User.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── auth-success.html
+│   ├── README.md
+│   ├── routes
+│   │   ├── auth.js
+│   │   └── cloudinary.js
+│   └── server.js
+├── SETUP_INSTRUCTIONS.md
+├── src
+│   ├── App.jsx
+│   ├── components
+│   │   ├── AddBlogModal.css
+│   │   ├── AddBlogModal.jsx
+│   │   ├── AddFlipbookModal.jsx
+│   │   ├── AddNewsletterModal.jsx
+│   │   ├── AddNotificationModal.jsx
+│   │   ├── AddPhotosModal.jsx
+│   │   ├── AdminMessages.css
+│   │   ├── AdminMessages.jsx
+│   │   ├── BlogPostPage.css
+│   │   ├── BlogPostPage.jsx
+│   │   ├── ConfirmModal.css
+│   │   ├── ConfirmModal.jsx
+│   │   ├── CreateAlbumModal.jsx
+│   │   ├── EditBlogModal.jsx
+│   │   ├── EmailSignupModal.css
+│   │   ├── EmailSignupModal.jsx
+│   │   ├── ErrorBoundary.js
+│   │   ├── FadeInSection.jsx
+│   │   ├── Footer.jsx
+│   │   ├── ForgotPasswordModal.jsx
+│   │   ├── Header.jsx
+│   │   ├── LoginButton.jsx
+│   │   ├── LoginModal.css
+│   │   ├── LoginModal.jsx
+│   │   ├── MainLayout.jsx
+│   │   ├── Notification.jsx
+│   │   ├── SocialMediaSidebar.jsx
+│   │   ├── Toast.css
+│   │   └── ViewBlogModal.jsx
+│   ├── context
+│   │   ├── AuthContext.jsx
+│   │   ├── ColorContext.js
+│   │   ├── ColorContext.jsx
+│   │   ├── index.html
+│   │   ├── ModalContext.jsx
+│   │   └── UserContext.jsx
+│   ├── CreateAccount.jsx
+│   ├── firebase-config.js
+│   ├── hooks
+│   │   ├── useHeaderOffset.js
+│   │   └── useScrollFadeIn.js
+│   ├── index.js
+│   ├── main.jsx
+│   ├── pages
+│   │   ├── About.jsx
+│   │   ├── Academics.jsx
+│   │   ├── AlbumDetail.jsx
+│   │   ├── Blog.jsx
+│   │   ├── BlogDetail.jsx
+│   │   ├── BlogPostViewer.jsx
+│   │   ├── config.js
+│   │   ├── Contact.jsx
+│   │   ├── CreateAccount.jsx
+│   │   ├── Gallery.jsx
+│   │   ├── Home.jsx
+│   │   ├── Janmat.jsx
+│   │   ├── LatestJanmat.jsx
+│   │   ├── Notifications.jsx
+│   │   └── SingleBlog.jsx
+│   └── styles
+│       ├── AddPhotosModal.css
+│       ├── AlbumDetail.css
+│       ├── BlogDetail.css
+│       ├── Comments.css
+│       ├── Gallery.css
+│       ├── HomeGallery.css
+│       ├── HomePageSections.css
+│       ├── Notification.css
+│       ├── SocialMediaSidebar.css
+│       ├── style.css
+│       └── vite.config.js
+├── style.css
+├── tree.js
+└── vite.config.js

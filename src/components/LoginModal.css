@@ -1,0 +1,115 @@
+/* LoginModal.css */
+
+/* ... other styles ... */
+
+/* ✅ Google Login Button Styles */
+.google-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.google-login-btn:hover {
+  background-color: #f7f7f7;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.google-login-btn:disabled {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+}
+
+
+/* ✅ Welcome Popup Styles */
+.welcome-popup {
+  /* Centered inside the modal content area */
+  background: #2c3e50; /* Dark blue-gray background */
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  padding: 30px 40px; /* Increased padding */
+  text-align: center;
+  animation: popupFadeIn 0.3s ease-in-out;
+  width: 100%; /* Take full width of the container */
+  max-width: 360px; /* Set a max-width for larger screens */
+  margin: 0 auto; /* Center it horizontally */
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Heading inside popup */
+.welcome-popup h3 {
+  font-size: 1.4rem;
+  color: #fff;
+  margin: 0 0 15px 0; /* tighter spacing */
+  font-weight: 500;
+  word-wrap: break-word; /* wrap long messages */
+}
+
+/* OK button */
+.ok-btn {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+  margin-top: 15px; /* spacing from message */
+  width: 120px; /* Give the button a fixed width */
+}
+
+.ok-btn:hover {
+  background-color: #43a047;
+}
+
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.toast-success {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    z-index: 1000;
+    font-size: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  
+  .toast-success.show {
+    transform: translateY(0);
+    opacity: 1;
+  }

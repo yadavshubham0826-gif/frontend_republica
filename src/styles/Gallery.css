@@ -1,0 +1,150 @@
+/* src/styles/Gallery.css */
+
+.album-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  perspective: 1000px; /* Add perspective for the 3D effect */
+  gap: 0.75rem; /* Space between card and description */
+}
+
+.album-card {
+  position: relative;
+  display: block;
+  overflow: visible; /* Allow pseudo-elements to be seen */
+  border-radius: 0; /* Sharp edges for the card */
+  transform-style: preserve-3d; /* Enable 3D transforms */
+  height: 280px; /* A fixed height for consistency */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.album-card::before,
+.album-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #ffffff; /* Make them look like paper/photos */
+  border: 1px solid #e2e8f0; /* Use the standard border color */
+  border-radius: 0; /* Match sharp edges */
+  transition: transform 0.3s ease;
+  z-index: -1; /* Place them behind the main card */
+}
+
+.album-card:hover::before {
+  transform: translate(8px, 8px); /* Shift out on hover */
+}
+
+.album-card:hover::after {
+  transform: translate(16px, 16px); /* Shift out further on hover */
+}
+
+.album-card:hover {
+  /* Apply 3D transform and light green glow on hover */
+  transform: translateY(-10px) rotateX(5deg) scale(1.05);
+  box-shadow: 0 40px 60px -20px rgba(144, 238, 144, 0.7), 0 0 20px rgba(144, 238, 144, 0.5);
+}
+
+.album-card-image {
+  position: relative; /* Ensure image is in the stacking context */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7; /* Make the image itself translucent */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.album-card:hover .album-card-image {
+  opacity: 0.5;
+  transform: scale(1.1); /* Zoom in on hover */
+}
+
+.album-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2; /* Ensure overlay is on top of the image */
+  bottom: 0;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  text-align: center;
+  /* Glass effect on hover */
+  background: rgba(0, 0, 0, 0.2); /* Initial dark overlay for readability */
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.album-card:hover .album-card-overlay {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.album-title {
+  font-family: 'Montserrat', sans-serif;
+  color: white;
+  font-size: 1.8rem; /* Increased font size */
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5); /* Shadow for readability */
+  transition: opacity 0.3s ease;
+  /* Position absolutely to allow layering */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90%; /* Prevent long titles from overflowing */
+  transform: translate(-50%, -50%);
+}
+
+.album-card:hover .album-title {
+  opacity: 0; /* Make title disappear on hover */
+}
+
+.album-description {
+  font-size: 0.9rem;
+  color: white; /* Solid white color */
+  text-align: center;
+  margin: 0;
+  /* Hide by default and set up for transition */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  /* Position absolutely to layer it in the same spot as the title */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90%; /* Prevent long descriptions from overflowing */
+  transform: translate(-50%, -50%);
+}
+
+.album-card:hover .album-description {
+  opacity: 1; /* Make description appear on hover */
+}
+
+/* Styles for the new delete button */
+.delete-album-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(239, 68, 68, 0.7); /* Red with transparency */
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  z-index: 5; /* Ensure it's above the overlay */
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-album-button:hover {
+  background-color: rgba(239, 68, 68, 1); /* Solid red on hover */
+  transform: scale(1.1);
+}

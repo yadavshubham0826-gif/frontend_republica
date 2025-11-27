@@ -1,0 +1,124 @@
+/* ---------------------------------------- */
+/* FULL-WIDTH GALLERY WRAPPER */
+/* ---------------------------------------- */
+.home-gallery-container {
+    width: 100%;
+    max-width: 100vw;
+    margin: 0 0 40px; /* Removed top margin, bottom is 40px */
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ---------------------------------------- */
+/* GALLERY SECTION HEADING */
+/* ---------------------------------------- */
+.home-gallery-container h2 {
+    color: #fff; /* Set text color to white */
+    font-family: 'Montserrat', sans-serif; /* Set font to Montserrat */
+    font-size: 2.8rem; /* Increased font size */
+    text-align: center;
+    margin: 0 0 30px; /* Removed top margin, bottom is 30px */
+    font-weight: 700; /* A bold weight for the heading */
+}
+
+
+/* ---------------------------------------- */
+/* GALLERY GRID LAYOUT */
+/* ---------------------------------------- */
+.home-gallery-film {
+    display: grid; 
+    grid-auto-flow: column; /* Lays out items in a single horizontal line */
+    /* 
+     * This sets the width of each column. It's the same calculation that gave us the large size you liked:
+     * (100vw - side paddings - gap) / 2
+    */
+    grid-auto-columns: calc(50vw - 37.5px);
+    gap: 25px;
+    padding: 0 25px; 
+    overflow-x: auto; /* Enables horizontal scrolling */
+    /* The key change: NO scroll-snap. This allows for smooth, free scrolling. */
+    -webkit-overflow-scrolling: touch; /* Improves scrolling feel on iOS */
+    scrollbar-width: none; /* Hides scrollbar on Firefox */
+}
+
+
+/* ---------------------------------------- */
+/* SINGLE GALLERY BOX — LARGE IMAGE */
+/* ---------------------------------------- */
+.home-gallery-box {
+    width: 100%; /* Item will fill the grid column */
+    height: 450px; /* A nice large height */
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.35s ease;
+}
+
+/* Smooth zoom hover */
+.home-gallery-box:hover {
+    transform: scale(1.05);
+}
+
+
+/* ---------------------------------------- */
+/* IMAGE INSIDE BOX */
+/* ---------------------------------------- */
+.home-gallery-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+}
+
+/* Smooth zoom-on-hover for image */
+.home-gallery-box:hover img {
+    transform: scale(1.1);
+}
+
+
+/* ---------------------------------------- */
+/* OVERLAY TEXT */
+/* ---------------------------------------- */
+.home-gallery-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.home-gallery-title {
+    padding-left: 5px;
+}
+
+
+
+/* ---------------------------------------- */
+/* RESPONSIVE FIXES */
+/* ---------------------------------------- */
+@media (max-width: 900px) {
+    .home-gallery-film {
+        /* On tablets, switch to a 1-column grid */
+        grid-auto-columns: 85vw; /* On tablets, each item is 85% of the screen width */
+        padding: 0 15px; /* Adjust padding for smaller screens */
+    }
+    .home-gallery-box {
+        height: 400px;
+    }
+}
+
+@media (max-width: 600px) {
+    .home-gallery-film {
+        grid-auto-columns: 90vw; /* On mobile, each item is 90% of the screen width */
+        padding: 0 15px; /* Less padding on mobile */
+    }
+    .home-gallery-box {
+        height: 300px;
+    }
+}

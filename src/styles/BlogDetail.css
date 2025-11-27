@@ -1,0 +1,279 @@
+/* Overall page background like a desk */
+.blog-detail-page {
+  background-color: #e0e0e0; /* soft gray background */
+  min-height: 100vh;
+  padding-top: 100px; /* space for fixed header */
+  padding-bottom: 50px;
+  display: flex;
+  justify-content: center;
+  scroll-behavior: smooth;
+}
+
+/* PDF-style page */
+.blog-detail-container {
+  background-color: #ffffff; /* white page */
+  max-width: 900px;
+  width: 90%;
+  padding: 60px 50px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  overflow-wrap: break-word;
+  margin-bottom: 50px; /* spacing between pages */
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.blog-title {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+
+.blog-meta {
+  color: #777;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.blog-content img {
+  max-width: 100%;
+  display: block;
+  margin: 20px auto;
+}
+
+.blog-content p {
+  line-height: 1.8;
+  margin-bottom: 1.4rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.blog-content h2, .blog-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.blog-loading, .blog-error {
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+/* Optional: make the page "scrollable like a PDF" */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+/* Action Buttons */
+.blog-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #555;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.action-btn span[role="img"] {
+  font-size: 1.5rem; /* Increased icon size */
+  line-height: 1; /* Helps with vertical alignment */
+}
+
+/* Comment Section */
+.comment-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  scroll-margin-top: 120px; /* Offset for fixed header */
+}
+
+.comment-section h2 {
+  margin-bottom: 1rem;
+}
+
+.comment-section p {
+  color: #666;
+  font-style: italic;
+}
+
+/* Comment Form */
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.comment-form input,
+.comment-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+  box-sizing: border-box; /* Important for padding and width */
+}
+
+.comment-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.comment-form button {
+  align-self: flex-end;
+  padding: 0.6rem 1.2rem;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.comment-form button:hover {
+  background-color: #555;
+}
+
+/* Comment List */
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Modern card-style comment */
+.comment-item {
+  position: relative; /* Needed for delete button */
+  background: #fff;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.comment-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.comment-item strong {
+  font-size: 1.1rem;
+  color: #000;
+}
+
+.comment-item p {
+  margin: 0.5rem 0;
+}
+
+.comment-item span {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Admin comment highlighting */
+.comment-item.admin-comment {
+  border-left: 4px solid #ff4d4f; /* red accent for admin */
+  background-color: #fff3f3;       /* light red background */
+  padding-left: 1rem;              /* spacing for border */
+  border-radius: 10px;
+}
+
+.comment-item.admin-comment strong {
+  color: #d32f2f; /* dark red for admin name */
+}
+
+/* Delete button */
+.delete-comment-btn {
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.delete-comment-btn:hover {
+  background: #c0392b;
+}
+
+.comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.like-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.like-btn:hover, .like-btn:disabled {
+  color: #000;
+}
+
+.like-btn svg {
+  transition: fill 0.2s, stroke 0.2s;
+}
+
+.like-btn:disabled {
+  cursor: not-allowed;
+}
+
+.admin-liked-comment {
+  border: 2px solid green;
+  border-radius: 10px; /* to match the item's border radius */
+  padding-bottom: 1.5rem; /* to make space for the badge */
+}
+
+.admin-liked-badge {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 1rem;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: green;
+}

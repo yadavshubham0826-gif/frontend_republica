@@ -1,0 +1,56 @@
+.notification {
+  position: fixed;
+  top: 100px; /* Position below the header */
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2000; /* Ensure it's on top of other content */
+  animation: slideInFromRight 0.4s ease-out;
+  min-width: 320px;
+  max-width: 90%;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.success {
+  background-color: #2a643b; /* Success green */
+}
+
+.notification.error {
+  background-color: #c33; /* Error red */
+}
+
+.notification p {
+  margin: 0;
+  color: #fff; /* Ensure text is white */
+}
+
+.notification .close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 15px;
+  opacity: 0.7;
+  padding: 0;
+}
+
+.notification .close-btn:hover {
+  opacity: 1;
+}

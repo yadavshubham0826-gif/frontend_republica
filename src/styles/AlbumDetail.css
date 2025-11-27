@@ -1,0 +1,85 @@
+/* src/styles/AlbumDetail.css */
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.gallery-item-wrapper {
+  perspective: 1000px;
+}
+
+.gallery-item {
+  border-radius: 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  position: relative;
+  background-color: transparent; /* Ensure background is transparent for glow */
+}
+
+.gallery-item:hover {
+  transform: translateY(-10px) rotateX(5deg) scale(1.05);
+  box-shadow: 0 40px 60px -20px rgba(255, 235, 59, 0.8), 0 0 20px rgba(255, 235, 59, 0.6);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+  position: relative; /* Ensure image is in the stacking context */
+  z-index: 1;         /* Place image above pseudo-elements */
+}
+
+/* Stacking effect */
+.gallery-item::before,
+.gallery-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0;
+  transition: transform 0.3s ease;
+  z-index: -1;
+}
+
+.gallery-item::before {
+  transform: rotate(5deg);
+}
+
+.gallery-item::after {
+  transform: rotate(-5deg);
+}
+
+.gallery-item:hover::before {
+  transform: rotate(10deg) translateY(-5px);
+}
+
+.gallery-item:hover::after {
+  transform: rotate(-10deg) translateY(-5px);
+}
+
+.gallery-grid.two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* ======================================= */
+/* Modern Photo Viewer Customization       */
+/* ======================================= */
+
+/* Apply a blur effect to the backdrop */
+.PhotoView-Slider__Backdrop {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+}
+
+/* Style the "floating" image with rounded corners */
+.PhotoView__Photo {
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}

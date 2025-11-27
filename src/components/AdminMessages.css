@@ -1,0 +1,96 @@
+.admin-messages-container {
+    width: min(1100px, 92%);
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.admin-messages-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.admin-messages-container > p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+}
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.message-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: box-shadow 0.3s ease;
+}
+
+.message-card:hover {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.message-sender {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-sender strong {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.message-sender span {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.message-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.delete-btn {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #fdd;
+    border-color: #faa;
+}
+
+.message-body {
+    white-space: pre-wrap; /* Preserve line breaks from the textarea */
+    line-height: 1.6;
+    color: var(--text);
+}

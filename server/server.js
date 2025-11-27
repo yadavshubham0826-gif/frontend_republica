@@ -98,18 +98,34 @@ console.log('Loading auth routes...');
 app.use('/auth', require(path.join(__dirname, 'routes', 'auth')));
 
 // API route to get user data
-app.get('/api/user', (req, res) => {
-  if (req.isAuthenticated()) {
-    res.json({
-      username: req.user.displayName,
-      email: req.user.email,
-      role: req.user.role, // <-- Add role to the user object sent to frontend
-      // Add any other user details you need from the user object
+// ⭐️⭐️⭐️ ADDED ROUTE #1 — /api/auth/check
+app.get('/api/auth/check', (req, res) => {
+  console.log("Auth check hit. Session:", req.user);
+
+  if (req.isAuthenticated() && req.user) {
+    return res.json({
+      authenticated: true,
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        displayName: req.user.displayName,
+        role: req.user.role
+      }
     });
-  } else {
-    res.status(401).json({ error: 'User not authenticated' });
   }
+  return res.json({ authenticated: false });
 });
+// ⭐️⭐️⭐️ END OF ADDED ROUTE #1
+// ⭐️⭐️⭐️ ADDED ROUTE #2 — /api/auth/logout
+app.get('/api/auth/logout', (req, res) => {
+  req.logout(() => {
+    req.session.destroy(() => {
+      res.json({ success: true, message: "Logged out successfully" });
+    });
+  });
+});
+// ⭐️⭐️⭐️ END OF ADDED ROUTE #2
+
 
 // Test route
 app.get('/test', (req, res) => {

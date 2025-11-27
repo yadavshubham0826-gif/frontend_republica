@@ -42,6 +42,9 @@ export const UserProvider = ({ children }) => {
   const initialUser = getInitialUser();
 
   const [user, setUser] = useState(initialUser);
+  const [username, setUsername] = useState(initialUser?.name || initialUser?.displayName || null);
+  const [userEmail, setUserEmail] = useState(initialUser?.email || null);
+  const [role, setRole] = useState(initialUser?.role || null);
   const [isAuthenticated, setIsAuthenticated] = useState(!!initialUser);
   const [loading, setLoading] = useState(true);
 
@@ -53,32 +56,40 @@ export const UserProvider = ({ children }) => {
 
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
+    setUsername(userData.name || userData.displayName || null);
+    setUserEmail(userData.email || null);
+    setRole(userData.role || null);
     setIsAuthenticated(true);
   };
 
   // Logout
   const logout = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
         method: 'GET',
         credentials: 'include',
       });
+      const data = await res.json();
+      if (!data.success) console.warn("Backend logout: success=false");
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
       localStorage.removeItem('user');
       setUser(null);
+      setUsername(null);
+      setUserEmail(null);
+      setRole(null);
       setIsAuthenticated(false);
     }
   };
 
-  // AUTH CHECK (run once)
+  // AUTH CHECK (run once only)
   useEffect(() => {
     if (authCheckRan.current) return;
     authCheckRan.current = true;
 
     const checkAuth = async () => {
-      console.log("Checking backend authentication…");
+      console.log("Checking backend authentication (5 retries)…");
 
       const data = await fetchWithRetry(
         `${import.meta.env.VITE_API_BASE_URL}/api/auth/check`,
@@ -90,11 +101,17 @@ export const UserProvider = ({ children }) => {
       if (data.authenticated && data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
+        setUsername(data.user.name || data.user.displayName || null);
+        setUserEmail(data.user.email || null);
+        setRole(data.user.role || null);
         setIsAuthenticated(true);
         console.log("Authenticated:", data.user.email);
       } else {
         localStorage.removeItem('user');
         setUser(null);
+        setUsername(null);
+        setUserEmail(null);
+        setRole(null);
         setIsAuthenticated(false);
         console.log("Not authenticated.");
       }
@@ -111,10 +128,10 @@ export const UserProvider = ({ children }) => {
       if (event.key !== 'user') return;
 
       if (event.newValue) {
-        login(JSON.parse(event.newValue));
+        const stored = JSON.parse(event.newValue);
+        login(stored);
       } else {
-        setUser(null);
-        setIsAuthenticated(false);
+        logout();
       }
     };
 
@@ -140,8 +157,9 @@ export const UserProvider = ({ children }) => {
     <UserContext.Provider
       value={{
         user,
-        username: user?.name || user?.displayName || null,
-        userEmail: user?.email || null,
+        username,
+        userEmail,
+        role,
         isAuthenticated,
         loading,
         login,

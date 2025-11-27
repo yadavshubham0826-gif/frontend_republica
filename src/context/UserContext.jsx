@@ -59,12 +59,10 @@ export const UserProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
         method: 'GET',
         credentials: 'include',
       });
-      const data = await res.json();
-      if (!data.success) console.warn("Backend logout: success=false");
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
@@ -74,13 +72,13 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // AUTH CHECK (run once only)
+  // AUTH CHECK (run once)
   useEffect(() => {
     if (authCheckRan.current) return;
     authCheckRan.current = true;
 
     const checkAuth = async () => {
-      console.log("Checking backend authentication (5 retries)…");
+      console.log("Checking backend authentication…");
 
       const data = await fetchWithRetry(
         `${import.meta.env.VITE_API_BASE_URL}/api/auth/check`,
@@ -115,7 +113,8 @@ export const UserProvider = ({ children }) => {
       if (event.newValue) {
         login(JSON.parse(event.newValue));
       } else {
-        logout();
+        setUser(null);
+        setIsAuthenticated(false);
       }
     };
 

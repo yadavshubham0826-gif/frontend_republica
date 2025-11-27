@@ -133,74 +133,17 @@ const Header = () => {
             />
           </Link>
 
-          <div className="header-actions">
-            <div className="desktop-actions"> {/* Wrapper for desktop view */}
-              {user ? (
-                <div
-                  className={`user-menu dropdown ${isUserDropdownOpen ? 'show' : ''}`}
-                  ref={userDropdownRef}
-                >
-                  <button
-                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="user-name-btn"
-                    aria-haspopup="true"
-                    aria-expanded={isUserDropdownOpen}
-                  >
-                    {username}
-                    <span className="dropdown-arrow" style={{ transform: isUserDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
-                  </button> 
-                  <ul className={`dropdown-menu ${isUserDropdownOpen ? 'show' : ''}`}>
-                    {isUserAdmin && (
-                      <>
-                        <li><Link to="/admin-messages" onClick={() => setIsUserDropdownOpen(false)}>See Messages</Link></li>
-                        <li>
-                          <button className="logout-btn" onClick={() => { setShowAddBlogModal(true); setIsUserDropdownOpen(false); }}>Add Blog</button>
-                        </li>
-                        <li>
-                          <button className="logout-btn" onClick={() => { setShowAddPhotosModal(true); setIsUserDropdownOpen(false); }}>Create New Album</button>
-                        </li>
-                        <li>
-                          <button className="logout-btn" onClick={() => { setShowAddFlipbookModal(true); setIsUserDropdownOpen(false); }}>Add Janmat Flipbook</button>
-                        </li>
-                        <li>
-                          <button className="logout-btn" onClick={() => { handleEditNewsletterClick(); setIsUserDropdownOpen(false); }}>Edit Latest Newsletter</button>
-                        </li>
-                        <li>
-                          <button className="logout-btn" onClick={() => { setShowAddNotificationModal(true); setIsUserDropdownOpen(false); }}>Add In Notifications</button>
-                        </li>
-                        <li style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }}><hr style={{border: 'none', height: '1px', backgroundColor: 'var(--border)'}}/></li>
-                      </>
-                    )}
-                    <li>
-                      <button
-                        onClick={handleLogoutClick}
-                        className="logout-btn"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              ) : (
-                <LoginButton 
-                  onLoginClick={() => setShowLogin(true)} 
-                  onSignupClick={() => setShowSignup(true)} 
-                />
-              )}
-            </div>
-
-            <button
-              className="nav-toggle"
-              aria-controls="primary-nav"
-              aria-expanded={isNavOpen}
-              aria-label="Toggle navigation"
-              onClick={() => setIsNavOpen(!isNavOpen)}
-            >
-              <span className="nav-toggle-bar"></span>
-              <span className="nav-toggle-bar"></span>
-              <span className="nav-toggle-bar"></span>
-            </button>
-          </div>
+          <button
+            className="nav-toggle"
+            aria-controls="primary-nav"
+            aria-expanded={isNavOpen}
+            aria-label="Toggle navigation"
+            onClick={() => setIsNavOpen(!isNavOpen)}
+          >
+            <span className="nav-toggle-bar"></span>
+            <span className="nav-toggle-bar"></span>
+            <span className="nav-toggle-bar"></span>
+          </button>
         </div>
 
         <nav id="primary-nav" className={`site-nav ${isNavOpen ? 'open' : ''}`} aria-label="Primary">
@@ -261,53 +204,60 @@ const Header = () => {
             <li><Link to="/notifications" onClick={handleNavClick}>Notifications</Link></li>
 
             <li><Link to="/contact" onClick={handleNavClick}>Contact Us</Link></li>
-          </ul>
 
-          {/* --- DUPLICATE BLOCK FOR MOBILE NAV --- */}
-          <div className="header-actions">
-            {user ? (
+            {/* --- UNIFIED LOGIN/USER MENU --- */}
+            <li className="user-actions-item">
+              {user ? (
                 <div
                   className={`user-menu dropdown ${isUserDropdownOpen ? 'show' : ''}`}
-                  // Note: No ref here as it's for mobile layout
+                  ref={userDropdownRef}
                 >
-                  <button
-                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="user-name-btn"
-                    aria-haspopup="true"
-                    aria-expanded={isUserDropdownOpen}
-                  >
-                    {username}
-                    <span className="dropdown-arrow" style={{ transform: isUserDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
-                  </button> 
+                    <button
+                      onClick={(e) => {
+                        setIsUserDropdownOpen(!isUserDropdownOpen);
+                      }}
+                      className="user-name-btn"
+                      aria-haspopup="true"
+                      aria-expanded={isUserDropdownOpen}
+                    >
+                      {username}
+                      <span className="dropdown-arrow" style={{ transform: isUserDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                    </button> 
                   <ul className={`dropdown-menu ${isUserDropdownOpen ? 'show' : ''}`}>
-                    {isUserAdmin && (
-                      <>
-                        <li><Link to="/admin-messages" onClick={handleNavClick}>See Messages</Link></li>
-                        <li><button className="logout-btn" onClick={() => { setShowAddBlogModal(true); handleNavClick(); }}>Add Blog</button></li>
-                        <li><button className="logout-btn" onClick={() => { setShowAddPhotosModal(true); handleNavClick(); }}>Create New Album</button></li>
-                        <li><button className="logout-btn" onClick={() => { setShowAddFlipbookModal(true); handleNavClick(); }}>Add Janmat Flipbook</button></li>
-                        <li><button className="logout-btn" onClick={() => { handleEditNewsletterClick(); handleNavClick(); }}>Edit Latest Newsletter</button></li>
-                        <li><button className="logout-btn" onClick={() => { setShowAddNotificationModal(true); handleNavClick(); }}>Add In Notifications</button></li>
-                        <li style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }}><hr style={{border: 'none', height: '1px', backgroundColor: 'var(--border)'}}/></li>
-                      </>
-                    )}
-                    <li>
-                      <button
-                        onClick={() => { handleLogoutClick(); handleNavClick(); }}
-                        className="logout-btn"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              ) : (
-                <LoginButton 
-                  onLoginClick={() => { setShowLogin(true); handleNavClick(); }} 
-                  onSignupClick={() => { setShowSignup(true); handleNavClick(); }} 
-                />
+                      {isUserAdmin && (
+                        <>
+                          <li><Link to="/admin-messages" onClick={handleNavClick}>See Messages</Link></li>
+                          <li><button className="logout-btn" onClick={() => { setShowAddBlogModal(true); handleNavClick(); }}>Add Blog</button></li>
+                          <li><button className="logout-btn" onClick={() => { setShowAddPhotosModal(true); handleNavClick(); }}>Create New Album</button></li>
+                          <li><button className="logout-btn" onClick={() => { setShowAddFlipbookModal(true); handleNavClick(); }}>Add Janmat Flipbook</button></li>
+                          <li><button className="logout-btn" onClick={() => { handleEditNewsletterClick(); handleNavClick(); }}>Edit Latest Newsletter</button></li>
+                          <li><button className="logout-btn" onClick={() => { setShowAddNotificationModal(true); handleNavClick(); }}>Add In Notifications</button></li>
+                          <li style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }}><hr style={{border: 'none', height: '1px', backgroundColor: 'var(--border)'}}/></li>
+                        </>
+                      )}
+                      <li>
+                        <button
+                          onClick={() => { handleLogoutClick(); handleNavClick(); }}
+                          className="logout-btn"
+                        >
+                          Logout
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                ) : (
+                <a 
+                  href="#" 
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    setShowLogin(true); 
+                    handleNavClick(e); 
+                  }}
+                >Login</a>
               )}
-          </div>
+
+            </li>
+          </ul>
         </nav>
       </div>
 

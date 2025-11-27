@@ -59,7 +59,7 @@ export const UserProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      const res = await fetch('/api/auth/logout', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -83,7 +83,7 @@ export const UserProvider = ({ children }) => {
       console.log("Checking backend authentication (5 retries)…");
 
       const data = await fetchWithRetry(
-        '/api/auth/check',
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/check`,
         { credentials: 'include' },
         5,
         1000

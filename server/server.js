@@ -29,6 +29,7 @@ const cloudinary = require(path.join(__dirname, 'config', 'cloudinary'));
 
 // 4️⃣ Initialize Express
 const app = express();
+app.set('trust proxy', 1); // Important for Render behind proxy
 
 const port = process.env.PORT || 5000;
 
@@ -73,18 +74,18 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Session
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'a default secret',
+  name: 'sessionId',               // optional custom cookie name
+  secret: process.env.SESSION_SECRET || 'keyboardcat',
   resave: false,
-  saveUninitialized: true,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+  saveUninitialized: false,
   cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Set secure to true in production
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'lax' in development to allow cookies over HTTP
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-    domain: process.env.NODE_ENV === 'production' ? new URL(process.env.HOST_URL).hostname : undefined,
-  },
+    secure: true,                  // HTTPS only
+    httpOnly: true,                // JS cannot read cookie
+    sameSite: 'none',              // allows cross-site (Vercel frontend)
+    maxAge: 1000 * 60 * 60 * 24    // 1 day
+  }
 }));
+
 
 // Passport middleware
 app.use(passport.initialize());

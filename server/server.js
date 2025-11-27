@@ -82,7 +82,7 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production', // Set secure to true in production
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'lax' in development to allow cookies over HTTP
     maxAge: 1000 * 60 * 60 * 24, // 1 day
-    // domain: 'localhost', // Removed: Let browser manage or set explicitly if needed for specific setups
+    domain: process.env.NODE_ENV === 'production' ? new URL(process.env.HOST_URL).hostname : undefined,
   },
 }));
 

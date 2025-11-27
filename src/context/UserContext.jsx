@@ -5,11 +5,11 @@ export const UserContext = createContext(null);
 
 // Helper: safely get user from localStorage
 const getInitialUser = () => {
-  const storedUser = localStorage.getItem('user');
   try {
-    return storedUser ? JSON.parse(storedUser) : null;
-  } catch (error) {
-    console.error("Failed to parse user from localStorage:", error);
+    const stored = localStorage.getItem('user');
+    return stored ? JSON.parse(stored) : null;
+  } catch (err) {
+    console.error("Failed to parse user from localStorage:", err);
     return null;
   }
 };
@@ -19,32 +19,38 @@ const fetchWithRetry = async (url, options = {}, retries = 5, delay = 1000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
+
       if (!response.ok) {
-        // If the server returns HTML (like a 404 page), it means the API route doesn't exist. Stop retrying.
         if (response.headers.get("content-type")?.includes("text/html")) {
-          throw new Error(`Backend returned HTML for an API route. Route not found or backend not deployed.`);
+          throw new Error(`Backend returned HTML (route missing or server down).`);
         }
         throw new Error(`Backend responded with status: ${response.status}`);
       }
+
       return await response.json();
     } catch (err) {
-      console.log(`Attempt ${i + 1} failed: ${err.message}`);
-      await new Promise(r => setTimeout(r, delay));
+      console.warn(`Attempt ${i + 1} failed: ${err.message}`);
+      await new Promise(res => setTimeout(res, delay));
     }
   }
+
   console.error("Backend unreachable after retries.");
   return { authenticated: false };
 };
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(getInitialUser);
-  const [isAuthenticated, setIsAuthenticated] = useState(!!getInitialUser());
+  const initialUser = getInitialUser();
+
+  const [user, setUser] = useState(initialUser);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!initialUser);
   const [loading, setLoading] = useState(true);
-  const authCheckEffectRan = useRef(false); // Prevent double-run in Strict Mode
+
+  const authCheckRan = useRef(false); // StrictMode protection
 
   // Login
   const login = (userData) => {
     if (!userData) return;
+
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
@@ -53,36 +59,31 @@ export const UserProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      const response = await fetch('/api/auth/logout', {
+      const res = await fetch('/api/auth/logout', {
         method: 'GET',
         credentials: 'include',
       });
-      const data = await response.json();
-      if (data.success) {
-        console.log("Backend logout successful.");
-      } else {
-        console.warn("Backend logout: success=false");
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
+      const data = await res.json();
+      if (!data.success) console.warn("Backend logout: success=false");
+    } catch (err) {
+      console.error("Logout error:", err);
     } finally {
       localStorage.removeItem('user');
       setUser(null);
       setIsAuthenticated(false);
-      console.log("Client-side logout complete.");
     }
   };
 
-  // AUTH CHECK — RUN ONCE, RETRY 5 TIMES
+  // AUTH CHECK (run once only)
   useEffect(() => {
-    if (authCheckEffectRan.current) return; // block second StrictMode run
-    authCheckEffectRan.current = true;
+    if (authCheckRan.current) return;
+    authCheckRan.current = true;
 
-    const checkAuthStatus = async () => {
-      console.log("Checking auth status with backend (5 retries)...");
+    const checkAuth = async () => {
+      console.log("Checking backend authentication (5 retries)…");
 
       const data = await fetchWithRetry(
-        '/api/auth/check', // Use the proxied path
+        '/api/auth/check',
         { credentials: 'include' },
         5,
         1000
@@ -92,52 +93,49 @@ export const UserProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(data.user));
         setUser(data.user);
         setIsAuthenticated(true);
-        console.log("User authenticated:", data.user.email);
+        console.log("Authenticated:", data.user.email);
       } else {
         localStorage.removeItem('user');
         setUser(null);
         setIsAuthenticated(false);
-        console.log("User NOT authenticated.");
+        console.log("Not authenticated.");
       }
 
       setLoading(false);
     };
 
-    checkAuthStatus();
+    checkAuth();
   }, []);
 
-  // Sync across tabs
+  // Sync login/logout across tabs
   useEffect(() => {
-    const handleStorageChange = (event) => {
-      if (event.key === 'user') {
-        if (event.newValue) {
-          login(JSON.parse(event.newValue));
-        } else {
-          logout();
-        }
+    const handler = (event) => {
+      if (event.key !== 'user') return;
+
+      if (event.newValue) {
+        login(JSON.parse(event.newValue));
+      } else {
+        logout();
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('storage', handler);
+    return () => window.removeEventListener('storage', handler);
   }, []);
 
   // Popup OAuth communication
   useEffect(() => {
-    const handleMessage = (event) => {
+    const handler = (event) => {
       if (event.data?.type === 'authSuccess' && event.data.user) {
-        console.log("Popup auth success:", event.data.user);
         login(event.data.user);
       }
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
   }, []);
 
-  if (loading) {
-    return <div></div>;
-  }
+  if (loading) return <div></div>;
 
   return (
     <UserContext.Provider
@@ -158,7 +156,7 @@ export const UserProvider = ({ children }) => {
 
 // Custom hook
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) throw new Error('useUser must be used within a UserProvider');
-  return context;
+  const ctx = useContext(UserContext);
+  if (!ctx) throw new Error("useUser must be used within UserProvider");
+  return ctx;
 };

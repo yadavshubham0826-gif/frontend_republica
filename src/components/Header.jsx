@@ -226,18 +226,18 @@ const Header = () => {
                   <ul className={`dropdown-menu ${isUserDropdownOpen ? 'show' : ''}`}>
                       {isUserAdmin && (
                         <>
-                          <li><Link to="/admin-messages" onClick={handleNavClick}>See Messages</Link></li>
-                          <li><button className="logout-btn" onClick={() => { setShowAddBlogModal(true); handleNavClick(); }}>Add Blog</button></li>
-                          <li><button className="logout-btn" onClick={() => { setShowAddPhotosModal(true); handleNavClick(); }}>Create New Album</button></li>
-                          <li><button className="logout-btn" onClick={() => { setShowAddFlipbookModal(true); handleNavClick(); }}>Add Janmat Flipbook</button></li>
-                          <li><button className="logout-btn" onClick={() => { handleEditNewsletterClick(); handleNavClick(); }}>Edit Latest Newsletter</button></li>
-                          <li><button className="logout-btn" onClick={() => { setShowAddNotificationModal(true); handleNavClick(); }}>Add In Notifications</button></li>
+                          <li><Link to="/admin-messages" onClick={(e) => handleNavClick(e)}>See Messages</Link></li>
+                          <li><button className="logout-btn" onClick={(e) => { setShowAddBlogModal(true); handleNavClick(e); }}>Add Blog</button></li>
+                          <li><button className="logout-btn" onClick={(e) => { setShowAddPhotosModal(true); handleNavClick(e); }}>Create New Album</button></li>
+                          <li><button className="logout-btn" onClick={(e) => { setShowAddFlipbookModal(true); handleNavClick(e); }}>Add Janmat Flipbook</button></li>
+                          <li><button className="logout-btn" onClick={(e) => { handleEditNewsletterClick(); handleNavClick(e); }}>Edit Latest Newsletter</button></li>
+                          <li><button className="logout-btn" onClick={(e) => { setShowAddNotificationModal(true); handleNavClick(e); }}>Add In Notifications</button></li>
                           <li style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }}><hr style={{border: 'none', height: '1px', backgroundColor: 'var(--border)'}}/></li>
                         </>
                       )}
                       <li>
                         <button
-                          onClick={() => { handleLogoutClick(); handleNavClick(); }}
+                          onClick={(e) => { handleLogoutClick(); handleNavClick(e); }}
                           className="logout-btn"
                         >
                           Logout

@@ -36,7 +36,7 @@ const Contact = () => {
 
     try {
       // Use the backend API to submit the contact form
-      const response = await fetch("http://localhost:5000/api/contact-submission", {
+      const response = await fetch("/api/contact-submission", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

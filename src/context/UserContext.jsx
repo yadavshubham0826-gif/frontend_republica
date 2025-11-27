@@ -19,7 +19,13 @@ const fetchWithRetry = async (url, options = {}, retries = 5, delay = 1000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
-      if (!response.ok) throw new Error("Backend not ready");
+      if (!response.ok) {
+        // If the server returns HTML (like a 404 page), it means the API route doesn't exist. Stop retrying.
+        if (response.headers.get("content-type")?.includes("text/html")) {
+          throw new Error(`Backend returned HTML for an API route. Route not found or backend not deployed.`);
+        }
+        throw new Error(`Backend responded with status: ${response.status}`);
+      }
       return await response.json();
     } catch (err) {
       console.log(`Attempt ${i + 1} failed: ${err.message}`);

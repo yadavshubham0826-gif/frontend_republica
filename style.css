@@ -109,7 +109,7 @@ body {
 .home-heading-container {
   backdrop-filter: blur(40px);
   background: rgba(0, 0, 0, 0.4) !important;
-  padding: 80px 0;
+  padding: 40px 0; /* Reduced padding from 80px to 40px */
   border-bottom: 1px solid var(--glass-border);
 }
 
@@ -143,17 +143,14 @@ body {
 
 /* ---------------- GALLERY (Simple Section) ---------------- */
 #gallery.section {
-  height: 400px !important; /* Force height to 500px */
-  display: flex;
-  align-items: center; /* Vertically center the content */
-  justify-content: center; /* Horizontally center the content */
-  padding: 0; /* Override default section padding */
+  /* Reduce vertical padding to make the section more compact */
+  padding: 1rem 0;
 }
 
 /* ---------------- TEAM CARDS ---------------- */
 .person {
   text-align: center;
-  padding: 25px;
+  padding: 20px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);

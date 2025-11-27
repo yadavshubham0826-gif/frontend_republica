@@ -18,8 +18,7 @@
 # Server Environment Variables
 /server/config/config.env
 
-# Cloudinary Configuration (contains API secret)
-/server/config/cloudinary.js
+
 
 # Log files
 *.log

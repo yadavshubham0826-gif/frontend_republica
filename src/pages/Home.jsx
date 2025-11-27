@@ -315,7 +315,7 @@ const Home = () => {
           )}
         </div>
               </section>
-              //Contact Us Section//
+      //Contact Us Section//
       <section id="contact" className="section light">
               <div className="container text-center">
                 <FadeInSection>

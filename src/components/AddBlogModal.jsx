@@ -24,7 +24,7 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
 
     try {
       // Send data to the secure backend endpoint
-      const response = await fetch("http://localhost:5000/api/create-blog", {
+      const response = await fetch("/api/create-blog", {
         method: "POST",
         credentials: 'include', // <-- ADD THIS LINE
         headers: {

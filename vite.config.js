@@ -11,15 +11,12 @@ export default defineConfig({
     port: 3000,
     open: true,
 
+    proxy: {
+      '/api': {
+        target: 'https://frontend-republica.onrender.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   }
 })
-
-
-
-
-
-
-
-
-
-

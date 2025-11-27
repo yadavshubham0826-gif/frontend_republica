@@ -32,7 +32,7 @@
      * This sets the width of each column. It's the same calculation that gave us the large size you liked:
      * (100vw - side paddings - gap) / 2
     */
-    grid-auto-columns: calc(50vw - 37.5px);
+    grid-auto-columns: calc(40vw - 37.5px);
     gap: 25px;
     padding: 0 25px; 
     overflow-x: auto; /* Enables horizontal scrolling */
@@ -47,12 +47,13 @@
 /* ---------------------------------------- */
 .home-gallery-box {
     width: 100%; /* Item will fill the grid column */
-    height: 450px; /* A nice large height */
+    height: 350px; /* A nice large height */
     border-radius: 18px;
     overflow: hidden;
     position: relative;
     cursor: pointer;
     transition: transform 0.35s ease;
+    background-color: black;
 }
 
 /* Smooth zoom hover */

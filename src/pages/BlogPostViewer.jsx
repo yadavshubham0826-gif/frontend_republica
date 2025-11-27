@@ -14,7 +14,7 @@ const BlogPostViewer = () => {
     const fetchPost = async () => {
       try {
         // Use new backend API to fetch blog post by slug
-        const response = await fetch(`http://localhost:5000/api/blog/${slug}`);
+        const response = await fetch(`/api/blog/${slug}`);
         if (!response.ok) {
           setError("Blog post not found.");
           setPost(null);

@@ -22,7 +22,7 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
     setLoading(true);
     setError("");
 
-    const googleLoginUrl = `https://republicadrcdu.vercel.app/auth/google`;
+    const googleLoginUrl = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
     const width = 600;
     const height = 700;
     const left = window.screen.width / 2 - width / 2;
@@ -55,7 +55,7 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
     setError("");
 
     try {
-      const response = await fetch("https://republicadrcdu.vercel.app/auth/email-login", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/email-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

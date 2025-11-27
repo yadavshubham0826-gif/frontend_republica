@@ -34,7 +34,7 @@ const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
       const coverPhotoBase64 = coverPhoto ? await toBase64(coverPhoto) : null;
 
       // Call the new secure backend endpoint
-      const response = await fetch("https://republicadrcdu.vercel.app/api/add-flipbook", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-flipbook`, {
         method: "POST",
         credentials: 'include', // <-- ADD THIS LINE
         headers: { "Content-Type": "application/json" },

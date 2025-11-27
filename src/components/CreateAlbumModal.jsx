@@ -62,7 +62,7 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
       const coverPhotoBase64 = await toBase64(coverPhoto);
 
       // Call the secure backend API
-      const response = await fetch('/api/create-album', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/create-album`, {
         method: 'POST',
         credentials: 'include', // <-- ADD THIS LINE
         headers: { 'Content-Type': 'application/json' },

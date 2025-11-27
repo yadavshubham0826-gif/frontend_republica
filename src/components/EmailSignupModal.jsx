@@ -35,7 +35,7 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("https://republicadrcdu.vercel.app/auth/send-otp", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -78,7 +78,7 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("https://republicadrcdu.vercel.app/auth/verify-otp", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
@@ -117,7 +117,7 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("https://republicadrcdu.vercel.app/auth/email-signup", {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/email-signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, dateOfBirth, role: 'user' }), // Ensure role is sent to backend

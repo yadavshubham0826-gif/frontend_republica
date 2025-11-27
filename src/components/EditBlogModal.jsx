@@ -33,7 +33,7 @@ const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
       setLoading(true);
       
       // 1️⃣ Call the new secure backend endpoint
-      const response = await fetch("https://republicadrcdu.vercel.app/api/edit-blog", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/edit-blog`, {
         method: "POST",
         credentials: 'include', // <-- ADD THIS LINE
         headers: { "Content-Type": "application/json" },

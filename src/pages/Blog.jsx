@@ -149,7 +149,7 @@ const Blog = () => {
 
     try {
       // Call the new secure backend endpoint
-      const response = await fetch("https://republicadrcdu.vercel.app/api/delete-blog", {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-blog`, {
         method: "POST",
         credentials: 'include', // <-- ADD THIS LINE
         headers: { "Content-Type": "application/json" },

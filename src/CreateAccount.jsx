@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useUser } from '../context/UserContext'; // Assuming UserContext is in a sibling directory
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'https://republicadrcdu.vercel.app'; // Your Flask server URL
+const API_URL = import.meta.env.VITE_API_BASE_URL; // Your Flask server URL
 
 function CreateAccount() {
     const [email, setEmail] = useState('');

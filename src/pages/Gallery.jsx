@@ -87,7 +87,7 @@ const Gallery = () => {
 
     try {
       // Call your server API instead of Firebase Function
-      const response = await fetch('https://republicadrcdu.vercel.app/api/delete-album', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-album`, {
         credentials: 'include', // <-- Add credentials to authenticate the admin
         method: 'POST',
         headers: {

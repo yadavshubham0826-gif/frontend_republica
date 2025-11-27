@@ -15,7 +15,7 @@ const SingleBlog = () => {
       try {
         setLoading(true);
         // Use new backend API to fetch blog post by ID
-        const response = await fetch(`/api/blog-by-id/${id}`);
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/blog-by-id/${id}`);
         if (response.ok) {
           const data = await response.json();
           setPost({

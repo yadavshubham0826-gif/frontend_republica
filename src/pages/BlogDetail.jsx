@@ -149,7 +149,7 @@ const BlogDetail = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-comment`, {
+      const response = await fetch(`/api/add-comment`, {
         method: "POST",
         credentials: 'include', // Include this for authenticated requests
         headers: { "Content-Type": "application/json" },
@@ -189,7 +189,7 @@ const BlogDetail = () => {
     if (!commentToDelete) return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-comment`, {
+      const response = await fetch(`/api/delete-comment`, {
         method: "POST",
         credentials: 'include', // Include this for authenticated requests
         headers: { "Content-Type": "application/json" },

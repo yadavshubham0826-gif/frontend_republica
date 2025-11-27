@@ -47,7 +47,7 @@ export const UserProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
-      const response = await fetch('https://republicadrcdu.vercel.app/auth/logout', {
+      const response = await fetch('/api/auth/logout', {
         method: 'GET',
         credentials: 'include',
       });
@@ -76,7 +76,7 @@ export const UserProvider = ({ children }) => {
       console.log("Checking auth status with backend (5 retries)...");
 
       const data = await fetchWithRetry(
-        'https://republicadrcdu.vercel.app/auth/check',
+        '/api/auth/check', // Use the proxied path
         { credentials: 'include' },
         5,
         1000

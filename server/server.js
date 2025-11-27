@@ -49,6 +49,7 @@ require(path.join(__dirname, 'config', 'passport'))(passport);
 // CORS
 const allowedOrigins = [
   'https://republicadrcdu.vercel.app', // Your deployed frontend
+  'https://republicadrcdu.vercel.app/', // Added with trailing slash, just in case
   'http://localhost:3000'             // Your local development environment
 ];
 

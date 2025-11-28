@@ -166,20 +166,50 @@ module.exports = function(db) {
   });
 
   // EMAIL LOGIN
-  router.post('/email-login', (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
-      if (err) return next(err);
+  router.post('/email-login', async (req, res, next) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    try {
+      // 1. Find the user by email in the database
+      const user = await User.findOne({ email: email }).select('+password'); // Explicitly include password
+
+      // 2. Handle case where email is not registered
       if (!user) {
-        return res.status(401).json({ error: info.message || 'Login failed. Please check your credentials.' });
+        return res.status(401).json({ error: 'Email not registered.' });
       }
-      req.logIn(user, (err) => {
-        if (err) return next(err);
-        return res.status(200).json({
-          success: true,
-          user: { id: user.id, name: user.name, email: user.email, role: user.role },
-        });
-      });
-    })(req, res, next);
+
+      // 3. Check if a password is set for this user
+      if (user.password) {
+        // A password exists, so compare it
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (isMatch) {
+          // Passwords match! Log the user in.
+          req.login(user, (err) => {
+            if (err) return next(err);
+            return res.status(200).json({
+              success: true,
+              user: { id: user.id, name: user.name, email: user.email, role: user.role },
+            });
+          });
+        } else {
+          // Password exists, but it's incorrect.
+          return res.status(401).json({ error: 'Incorrect password.' });
+        }
+      } else if (user.googleId) {
+        // 4. No password exists, but it's a Google account. Send the specific error.
+        return res.status(401).json({ error: 'google_auth_required' });
+      } else {
+        // 5. Fallback for unexpected cases (e.g., user with no password and no googleId)
+        return res.status(401).json({ error: 'Invalid login method for this account.' });
+      }
+    } catch (error) {
+      console.error('Error during email login:', error);
+      return res.status(500).json({ error: 'Internal server error during login.' });
+    }
   });
 
   return router;

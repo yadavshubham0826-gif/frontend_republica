@@ -229,6 +229,9 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
                 {loading && <span className="spinner"></span>}
                 {loading ? "Verifying..." : "Verify & Continue"}
               </button>
+              <p className="otp-spam-note">
+                Please Check Your Spam Folder Also for OTP.
+              </p>
               <button type="button" onClick={handleResendOtp} className="resend-btn" disabled={timer > 0}>
                 {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
               </button>

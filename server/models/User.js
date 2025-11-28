@@ -1,55 +1,31 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
   },
-  
   email: {
     type: String,
     required: true,
     unique: true,
-    lowercase: true,
+    match: [/.+\@.+\..+/, 'Please fill a valid email address'],
   },
-
   password: {
     type: String,
-    required: function () {
-      return this.authMethod === 'email';
-    }
+    // Password is not required for Google OAuth users
   },
-
-  googleId: {
-    type: String,
-  },
-
-  profilePicture: {
-    type: String,
-    default: 'https://i.imgur.com/6b6psO5.png',
-  },
-
-  authMethod: {
-    type: String,
-    enum: ['email', 'google'],
-    required: true,
-  },
-
-  // 🔥 IMPORTANT: ROLE FIELD
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    default: 'user', // 'user' or 'admin'
   },
-
-  dateOfBirth: {
-    type: Date,
+  provider: {
+    type: String,
+    required: true,
+    default: 'email', // 'email' or 'google'
   },
-
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  googleId: String,
 });
 
 module.exports = mongoose.model('User', UserSchema);

@@ -40,9 +40,9 @@ module.exports = function(db) {
     }
 
     try {
-      const usersRef = db.collection('users');
-      const snapshot = await usersRef.where('email', '==', email).get();
-      if (!snapshot.empty) {
+      // ✅ CORRECT: Check for existing user in MongoDB, not Firestore
+      const existingUser = await User.findOne({ email: email });
+      if (existingUser) {
         return res.status(409).json({ error: 'An account with this email already exists.' });
       }
     } catch (error) {

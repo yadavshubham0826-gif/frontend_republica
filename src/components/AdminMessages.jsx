@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
-import { db } from '../firebase-config';
-import { collection, getDocs, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import ConfirmModal from './ConfirmModal';
 import './AdminMessages.css';
 
@@ -32,15 +30,16 @@ const AdminMessages = () => {
     if (user && user.role === 'admin') {
       const fetchMessages = async () => {
         try {
-          const messagesCollection = collection(db, 'contactSubmissions');
-          // Order messages by timestamp, newest first
-          const q = query(messagesCollection, orderBy('timestamp', 'desc'));
-          const messageSnapshot = await getDocs(q);
-          const messageList = messageSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setMessages(messageList);
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/messages`, {
+            credentials: 'include', // Important for sending session cookies
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch messages.');
+          }
+          const data = await response.json();
+          setMessages(data);
         } catch (err) {
           console.error("Error fetching messages:", err);
           setError('Failed to load messages.');
@@ -62,9 +61,18 @@ const AdminMessages = () => {
     if (!messageToDelete) return;
 
     try {
-      await deleteDoc(doc(db, 'contactSubmissions', messageToDelete));
-      // Update state to remove the message from the UI instantly
-      setMessages(messages.filter(msg => msg.id !== messageToDelete));
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ messageId: messageToDelete }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete message.');
+      }
+      setMessages(messages.filter((msg) => msg.id !== messageToDelete));
     } catch (err) {
       console.error("Error deleting message:", err);
       setError('Failed to delete message.');
@@ -101,7 +109,7 @@ const AdminMessages = () => {
                   </div>
                   <div className="message-meta">
                     <span className="message-date">
-                      {message.timestamp ? new Date(message.timestamp.toDate()).toLocaleString() : 'No date'}
+                      {message.timestamp ? new Date(message.timestamp.seconds * 1000).toLocaleString() : (message.createdAt ? new Date(message.createdAt.seconds * 1000).toLocaleString() : 'No date')}
                     </span>
                     <button
                       className="delete-btn"

@@ -15,7 +15,7 @@ const getInitialUser = () => {
 };
 
 // Retry fetch helper
-const fetchWithRetry = async (url, options = {}, retries = 5, delay = 1000) => {
+const fetchWithRetry = async (url, options = {}, retries = 1, delay = 1000) => {
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);

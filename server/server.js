@@ -111,7 +111,7 @@ app.get('/api/auth/check', (req, res) => {
       user: {
         id: req.user.id,
         email: req.user.email,
-        displayName: req.user.displayName,
+        name: req.user.name,
         role: req.user.role
       }
     });

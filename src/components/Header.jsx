@@ -30,6 +30,7 @@ const Header = () => {
   const [showAddPhotosModal, setShowAddPhotosModal] = useState(false);
   const [showAddNotificationModal, setShowAddNotificationModal] = useState(false);
   const [newsletterToEdit, setNewsletterToEdit] = useState(null);
+  const [latestJanmatName, setLatestJanmatName] = useState("Janmat'25");
 
   const { user, logout, isAuthenticated } = useUser();
   const isUserAdmin = user && user.role === 'admin'; // <-- New admin check
@@ -37,6 +38,22 @@ const Header = () => {
   const userDropdownRef = useRef(null);
   const academicsDropdownRef = useRef(null); // Ref for Academics dropdown
   const janmatDropdownRef = useRef(null); // Ref for Janmat dropdown
+
+  // Fetch latest newsletter name on component mount
+  useEffect(() => {
+    const fetchLatestJanmatName = async () => {
+      try {
+        const newsletterRef = doc(db, 'latestNewsletter', 'current');
+        const docSnap = await getDoc(newsletterRef);
+        if (docSnap.exists()) {
+          setLatestJanmatName(docSnap.data().name || "Janmat'25");
+        }
+      } catch (error) {
+        console.error("Error fetching latest Janmat name:", error);
+      }
+    };
+    fetchLatestJanmatName();
+  }, []);
 
   // Close user dropdown on outside click
   useEffect(() => {
@@ -197,7 +214,7 @@ const Header = () => {
               </Link>
               <ul className="dropdown-menu">
                 <li><Link to="/janmat" onClick={handleNavClick}>Previous Issues</Link></li>
-                <li><Link to="/latest-janmat" onClick={handleNavClick}>Janmat'25</Link></li>
+                <li><Link to="/latest-janmat" onClick={handleNavClick}>{latestJanmatName}</Link></li>
               </ul>
             </li>
 

@@ -7,6 +7,7 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
   const [content, setContent] = useState('');
   const [author, setAuthor] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const modalContentRef = useRef(null);
 
   const generateSlug = (title) =>
@@ -23,6 +24,7 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
     }
 
     try {
+      setLoading(true);
       // Send data to the secure backend endpoint
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/create-blog`, {
         method: "POST",
@@ -47,6 +49,9 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
       onClose(); // Close the modal
     } catch (error) {
       console.error("Error saving post:", error);
+      setError(error.message || 'An error occurred while saving.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,7 +90,8 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
     plugins: [
       "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor",
       "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media",
-      "table", "help", "wordcount", "emoticons", "formatpainter", "textpattern"
+      "table", "help", "wordcount", "emoticons", "formatpainter"
+      // ⬆ removed "textpattern" ONLY
     ],
     toolbar:
       "undo redo | styleselect formatselect fontfamily fontsize | " +
@@ -95,28 +101,36 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
       "link image | table | emoticons | " +
       "removeformat | code fullscreen",
     style_formats: [
-      { title: 'Headers', items: [
+      {
+        title: 'Headers',
+        items: [
           { title: 'Heading 1', format: 'h1' },
           { title: 'Heading 2', format: 'h2' },
           { title: 'Heading 3', format: 'h3' },
           { title: 'Heading 4', format: 'h4' },
           { title: 'Heading 5', format: 'h5' },
           { title: 'Heading 6', format: 'h6' }
-        ] 
+        ]
       },
-      { title: 'Inline', items: [
+      {
+        title: 'Inline',
+        items: [
           { title: 'Bold', format: 'bold' },
           { title: 'Italic', format: 'italic' },
           { title: 'Underline', format: 'underline' },
           { title: 'Strikethrough', format: 'strikethrough' }
         ]
       },
-      { title: 'Blocks', items: [
+      {
+        title: 'Blocks',
+        items: [
           { title: 'Paragraph', format: 'p' },
           { title: 'Blockquote', format: 'blockquote' }
         ]
       },
-      { title: 'Image Styles', items: [
+      {
+        title: 'Image Styles',
+        items: [
           { title: 'Image Shadow', selector: 'img', classes: 'img-shadow' },
           { title: 'Image Border', selector: 'img', classes: 'img-border' }
         ]
@@ -135,7 +149,8 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
       input.onchange = async (e) => {
         const file = e.target.files[0];
         const reader = new FileReader();
-        reader.onload = () => callback(reader.result, { alt: file.name });
+        reader.onload = () =>
+          callback(reader.result, { alt: file.name });
         reader.readAsDataURL(file);
       };
       input.click();
@@ -144,9 +159,12 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
 />
 
 
+
         <div className="modal-actions">
-          <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-          <button onClick={handleSave} className="btn btn-primary">Save Post</button>
+          <button onClick={onClose} className="btn btn-secondary" disabled={loading}>Cancel</button>
+          <button onClick={handleSave} className="btn btn-primary" disabled={loading}>
+            {loading ? "Saving..." : "Save Post"}
+          </button>
         </div>
       </div>
     </div>

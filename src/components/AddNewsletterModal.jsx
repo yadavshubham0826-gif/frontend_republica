@@ -17,6 +17,7 @@ const getPublicIdFromUrl = (url) => {
 };
 
 const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEdit }) => {
+  const [name, setName] = useState('');
   const [topic, setTopic] = useState('');
   const [previewImage, setPreviewImage] = useState(null);
   const [content, setContent] = useState('');
@@ -28,6 +29,7 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
   const isEditMode = !!newsletterToEdit;
 
   useEffect(() => {
+    setName(isEditMode ? newsletterToEdit.name || "Janmat'25" : "Janmat'25");
     setTopic(isEditMode ? newsletterToEdit.topic || '' : '');
     setContent(isEditMode ? newsletterToEdit.content || '' : '');
     setEditImageChoice(isEditMode ? null : true); // Default to allow upload in add mode, ask in edit mode
@@ -45,7 +47,7 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!topic || !content) {
+    if (!name || !topic || !content) {
       setError('Topic and Content are required.');
       return;
     }
@@ -66,6 +68,7 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
         credentials: 'include', // <-- ADD THIS LINE
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+        name,
         topic,
         content,
         previewImageBase64,
@@ -80,6 +83,7 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
       }
 
       // Reset form and close modal on success
+      setName('');
       setTopic('');
       setPreviewImage(null);
       setContent('');
@@ -125,7 +129,7 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
         <form onSubmit={handleSubmit} className="add-blog-form">
           <div className="form-group">
             <label htmlFor="name">Name</label>
-            <input id="name" type="text" value="Janmat'25" readOnly disabled />
+            <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
           </div>
           <div className="form-group">
             <label htmlFor="topic">Topic</label>
@@ -156,72 +160,83 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
           <div className="form-group">
             <label>Content</label>
  <Editor
-  apiKey="wlob6qkemz0muvfnbvbjltl5n6419jw1uyoq4u2ym4hok7o6"
-  value={content}
-  onEditorChange={(newContent) => setContent(newContent)}
-  init={{
-    height: 500,
-    menubar: true,
-    plugins: [
-      "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor",
-      "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media",
-      "table", "help", "wordcount", "emoticons", "formatpainter", "textpattern"
-    ],
-    toolbar:
-      "undo redo | styleselect formatselect fontfamily fontsize | " +
-      "bold italic underline strikethrough forecolor backcolor | " +
-      "alignleft aligncenter alignright alignjustify | " +
-      "bullist numlist | outdent indent | " +
-      "link image | table | emoticons | " +
-      "removeformat | code fullscreen",
-    style_formats: [
-      { title: 'Headers', items: [
-          { title: 'Heading 1', format: 'h1' },
-          { title: 'Heading 2', format: 'h2' },
-          { title: 'Heading 3', format: 'h3' },
-          { title: 'Heading 4', format: 'h4' },
-          { title: 'Heading 5', format: 'h5' },
-          { title: 'Heading 6', format: 'h6' }
-        ] 
-      },
-      { title: 'Inline', items: [
-          { title: 'Bold', format: 'bold' },
-          { title: 'Italic', format: 'italic' },
-          { title: 'Underline', format: 'underline' },
-          { title: 'Strikethrough', format: 'strikethrough' }
-        ]
-      },
-      { title: 'Blocks', items: [
-          { title: 'Paragraph', format: 'p' },
-          { title: 'Blockquote', format: 'blockquote' }
-        ]
-      },
-      { title: 'Image Styles', items: [
-          { title: 'Image Shadow', selector: 'img', classes: 'img-shadow' },
-          { title: 'Image Border', selector: 'img', classes: 'img-border' }
-        ]
-      }
-    ],
-    content_style: `
-      img.img-shadow { box-shadow: 4px 4px 12px rgba(0,0,0,0.3); }
-      img.img-border { border: 2px solid #ccc; padding: 2px; }
-    `,
-    automatic_uploads: false,
-    file_picker_types: "image",
-    file_picker_callback: (callback) => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.onchange = async (e) => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () => callback(reader.result, { alt: file.name });
-        reader.readAsDataURL(file);
-      };
-      input.click();
-    },
-  }}
-/>
+   apiKey="wlob6qkemz0muvfnbvbjltl5n6419jw1uyoq4u2ym4hok7o6"
+   value={content}
+   onEditorChange={(newContent) => setContent(newContent)}
+   init={{
+     height: 500,
+     menubar: true,
+     plugins: [
+       "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor",
+       "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media",
+       "table", "help", "wordcount", "emoticons", "formatpainter"
+       // ⬆ removed "textpattern" ONLY
+     ],
+     toolbar:
+       "undo redo | styleselect formatselect fontfamily fontsize | " +
+       "bold italic underline strikethrough forecolor backcolor | " +
+       "alignleft aligncenter alignright alignjustify | " +
+       "bullist numlist | outdent indent | " +
+       "link image | table | emoticons | " +
+       "removeformat | code fullscreen",
+     style_formats: [
+       {
+         title: 'Headers',
+         items: [
+           { title: 'Heading 1', format: 'h1' },
+           { title: 'Heading 2', format: 'h2' },
+           { title: 'Heading 3', format: 'h3' },
+           { title: 'Heading 4', format: 'h4' },
+           { title: 'Heading 5', format: 'h5' },
+           { title: 'Heading 6', format: 'h6' }
+         ]
+       },
+       {
+         title: 'Inline',
+         items: [
+           { title: 'Bold', format: 'bold' },
+           { title: 'Italic', format: 'italic' },
+           { title: 'Underline', format: 'underline' },
+           { title: 'Strikethrough', format: 'strikethrough' }
+         ]
+       },
+       {
+         title: 'Blocks',
+         items: [
+           { title: 'Paragraph', format: 'p' },
+           { title: 'Blockquote', format: 'blockquote' }
+         ]
+       },
+       {
+         title: 'Image Styles',
+         items: [
+           { title: 'Image Shadow', selector: 'img', classes: 'img-shadow' },
+           { title: 'Image Border', selector: 'img', classes: 'img-border' }
+         ]
+       }
+     ],
+     content_style: `
+       img.img-shadow { box-shadow: 4px 4px 12px rgba(0,0,0,0.3); }
+       img.img-border { border: 2px solid #ccc; padding: 2px; }
+     `,
+     automatic_uploads: false,
+     file_picker_types: "image",
+     file_picker_callback: (callback) => {
+       const input = document.createElement("input");
+       input.type = "file";
+       input.accept = "image/*";
+       input.onchange = async (e) => {
+         const file = e.target.files[0];
+         const reader = new FileReader();
+         reader.onload = () =>
+           callback(reader.result, { alt: file.name });
+         reader.readAsDataURL(file);
+       };
+       input.click();
+     },
+   }}
+ />
+ 
           </div>
           <div className="confirm-modal-actions">
             {isEditMode && (

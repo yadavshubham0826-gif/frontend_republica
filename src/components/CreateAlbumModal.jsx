@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import heic2any from 'heic2any'; // Import the conversion library
 
 const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
   const [title, setTitle] = useState('');
@@ -9,18 +10,46 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
 
-  const onDrop = useCallback(acceptedFiles => {
+  const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setCoverPhoto(file);
-      setCoverPreview(URL.createObjectURL(file)); // Create a temporary URL for preview
+      let fileToProcess = acceptedFiles[0];
       setError('');
+      setIsCreating(true); // Show a processing state
+
+      const fileName = fileToProcess.name.toLowerCase();
+
+      // Check if the file is a HEIC/HEIF image
+      if (fileName.endsWith('.heic') || fileName.endsWith('.heif')) {
+        try {
+          // Convert it to JPEG
+          const convertedBlob = await heic2any({
+            blob: fileToProcess,
+            toType: 'image/jpeg',
+            quality: 0.8, // Adjust quality as needed
+          });
+
+          // Create a new File object from the converted blob
+          fileToProcess = new File([convertedBlob], `${fileName.split('.')[0]}.jpg`, {
+            type: 'image/jpeg',
+            lastModified: new Date().getTime(),
+          });
+        } catch (conversionError) {
+          console.error('Error converting HEIC file:', conversionError);
+          setError(`Failed to convert ${fileToProcess.name}. Please try a different file.`);
+          setIsCreating(false);
+          return; // Stop processing
+        }
+      }
+
+      setCoverPhoto(fileToProcess);
+      setCoverPreview(URL.createObjectURL(fileToProcess)); // Create a temporary URL for preview
+      setIsCreating(false); // Done processing
     }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif'] },
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.heic', '.heif'] }, // ✅ Accept HEIC/HEIF
     maxFiles: 1, // Only allow one cover photo
   });
 
@@ -135,7 +164,7 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
                   style={{ 
                     maxHeight: '150px', 
                     borderRadius: '8px', 
-                    objectFit: 'contain' 
+                    objectFit: 'contain'
                   }} 
                 />
               ) : ( // Otherwise, show the prompt text

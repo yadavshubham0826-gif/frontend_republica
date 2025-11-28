@@ -41,10 +41,23 @@ const AdminMessages = () => {
           const data = await response.json();
 
           // Normalize timestamps
-          const dataWithTimestamps = data.map(msg => ({
-            ...msg,
-            timestamp: msg.timestamp || msg.createdAt || null
-          }));
+        const dataWithTimestamps = data.map(msg => ({
+  ...msg,
+  date: msg.timestamp?.toDate
+    ? msg.timestamp.toDate()
+    : msg.timestamp?._seconds
+      ? new Date(msg.timestamp._seconds * 1000)
+      : msg.timestamp?.seconds
+        ? new Date(msg.timestamp.seconds * 1000)
+        : msg.createdAt?.toDate
+          ? msg.createdAt.toDate()
+          : msg.createdAt?._seconds
+            ? new Date(msg.createdAt._seconds * 1000)
+            : msg.createdAt?.seconds
+              ? new Date(msg.createdAt.seconds * 1000)
+              : new Date()
+}));
+
 
           setMessages(dataWithTimestamps);
         } catch (err) {

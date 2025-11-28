@@ -373,10 +373,17 @@ const BlogDetail = () => {
                       <p>{comment.text}</p>
                       <div className="comment-footer">
                         <span>
-                          {comment.createdAt?._seconds
-                            ? new Date(comment.createdAt._seconds * 1000).toLocaleString()
-                            : "Just now"}
-                        </span>
+  {comment.createdAt
+    ? comment.createdAt.toDate // Firestore Timestamp object
+      ? comment.createdAt.toDate().toLocaleString()
+      : comment.createdAt._seconds // Firestore Timestamp from client SDK
+        ? new Date(comment.createdAt._seconds * 1000).toLocaleString()
+        : comment.createdAt.seconds // Admin SDK timestamp
+          ? new Date(comment.createdAt.seconds * 1000).toLocaleString()
+          : new Date(comment.createdAt).toLocaleString() // fallback for JS Date
+    : "Just now"}
+</span>
+
                         <div className="comment-actions">
                           <button
                             className="like-btn"

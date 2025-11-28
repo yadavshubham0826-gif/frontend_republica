@@ -25,9 +25,23 @@ module.exports = function(db) {
 
   // Route to handle login success
   router.get('/login-success', (req, res) => {
-    // The user is now authenticated and in the session.
-    // Redirect to the frontend's home page or dashboard.
-    res.redirect('https://republicadrcdu.vercel.app/');
+    // This route is hit by the popup window after a successful Google login.
+    // We send a script to the popup that closes itself and tells the main window to reload.
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Authentication Success</title>
+        <script>
+          window.opener.location.reload(); // Reload the main window
+          window.close(); // Close the popup
+        </script>
+      </head>
+      <body>
+        <p>Authentication successful. You can close this window.</p>
+      </body>
+      </html>
+    `);
   });
 
   // === EMAIL & OTP ROUTES ===

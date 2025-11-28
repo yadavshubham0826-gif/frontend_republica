@@ -14,8 +14,8 @@ module.exports = function(db) {
   router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
   router.get('/google/callback', passport.authenticate('google', {
-    failureRedirect: '/login-failure', // A path on your frontend
-    successRedirect: '/login-success'  // A path on your frontend
+    failureRedirect: '/auth/login-failure',  // A path on your backend's auth router
+    successRedirect: '/auth/login-success'   // A path on your backend's auth router
   }));
 
   // Route to handle login failure

@@ -109,6 +109,8 @@ const AdminMessages = () => {
                   </div>
                   <div className="message-meta">
                     <span className="message-date">
+                      {console.log("message.timestamp", message.timestamp)}
+                      {console.log("message.createdAt", message.createdAt)}
                       {message.timestamp ? new Date(message.timestamp.seconds * 1000).toLocaleString() : (message.createdAt ? new Date(message.createdAt.seconds * 1000).toLocaleString() : 'No date')}
                     </span>
                     <button

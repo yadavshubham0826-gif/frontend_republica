@@ -21,6 +21,7 @@ const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcryptjs'); // For hashing passwords
+const nodemailer = require('nodemailer'); // For sending emails
 const connectDB = require(path.join(__dirname, 'config', 'database'));
 
 const { JSDOM } = require('jsdom'); // ✅ Import JSDOM for server-side DOM parsing
@@ -205,6 +206,63 @@ app.post('/auth/email-signup', async (req, res, next) => {
   }
 });
 // ⭐️⭐️⭐️ END OF ADDED ROUTE #4
+
+// ⭐️⭐️⭐️ ADDED ROUTE #5 — /auth/send-otp
+app.post('/auth/send-otp', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required.' });
+  }
+
+  // 1. Check if user already exists
+  try {
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.where('email', '==', email).get();
+    if (!snapshot.empty) {
+      return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
+  } catch (error) {
+    console.error('Error checking for existing user:', error);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+
+  // 2. Generate OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  const otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
+
+  // 3. Store OTP and email in session
+  req.session.otp = otp;
+  req.session.otpExpires = otpExpires;
+  req.session.emailForVerification = email;
+
+  // 4. Send Email
+  try {
+    // Configure nodemailer transporter (using environment variables)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail', // Or your preferred email service
+      auth: {
+        user: process.env.EMAIL_USER, // Your email address from .env
+        pass: process.env.EMAIL_PASS, // Your email password or app password from .env
+      },
+    });
+
+    const mailOptions = {
+      from: `"Republica DRC" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Your Verification Code for Republica',
+      html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    console.log(`OTP sent to ${email}`);
+    res.status(200).json({ success: true, message: 'OTP sent successfully.' });
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    res.status(500).json({ error: 'Failed to send verification email.' });
+  }
+});
+// ⭐️⭐️⭐️ END OF ADDED ROUTE #5
 
 // Test route
 app.get('/test', (req, res) => {

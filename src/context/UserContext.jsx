@@ -14,7 +14,7 @@ const getInitialUser = () => {
   }
 };
 
-// Retry fetch helper
+// Retry fetch helper (default retries = 1)
 const fetchWithRetry = async (url, options = {}, retries = 1, delay = 1000) => {
   for (let i = 0; i < retries; i++) {
     try {
@@ -89,12 +89,12 @@ export const UserProvider = ({ children }) => {
     authCheckRan.current = true;
 
     const checkAuth = async () => {
-      console.log("Checking backend authentication (5 retries)…");
+      console.log("Checking backend authentication…");
 
       const data = await fetchWithRetry(
         `${import.meta.env.VITE_API_BASE_URL}/api/auth/check`,
         { credentials: 'include' },
-        5,
+        1,  // only try once
         1000
       );
 

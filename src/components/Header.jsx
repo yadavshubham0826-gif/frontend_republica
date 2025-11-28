@@ -39,19 +39,20 @@ const Header = () => {
   const academicsDropdownRef = useRef(null); // Ref for Academics dropdown
   const janmatDropdownRef = useRef(null); // Ref for Janmat dropdown
 
+  const fetchLatestJanmatName = async () => {
+    try {
+      const newsletterRef = doc(db, 'latestNewsletter', 'current');
+      const docSnap = await getDoc(newsletterRef);
+      if (docSnap.exists()) {
+        setLatestJanmatName(docSnap.data().name || "Janmat'25");
+      }
+    } catch (error) {
+      console.error("Error fetching latest Janmat name:", error);
+    }
+  };
+
   // Fetch latest newsletter name on component mount
   useEffect(() => {
-    const fetchLatestJanmatName = async () => {
-      try {
-        const newsletterRef = doc(db, 'latestNewsletter', 'current');
-        const docSnap = await getDoc(newsletterRef);
-        if (docSnap.exists()) {
-          setLatestJanmatName(docSnap.data().name || "Janmat'25");
-        }
-      } catch (error) {
-        console.error("Error fetching latest Janmat name:", error);
-      }
-    };
     fetchLatestJanmatName();
   }, []);
 
@@ -312,7 +313,7 @@ const Header = () => {
               setShowAddNewsletterModal(false);
               setNewsletterToEdit(null); // Clear edit data on close
             }} 
-            onNewsletterAdded={() => window.location.reload()} 
+            onNewsletterAdded={fetchLatestJanmatName} 
             newsletterToEdit={newsletterToEdit}
           />
           <AddPhotosModal

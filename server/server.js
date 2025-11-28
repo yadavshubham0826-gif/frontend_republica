@@ -764,10 +764,10 @@ app.post('/api/delete-flipbook', ensureAdmin, async (req, res) => {
 // Admin Update Newsletter Route
 // ----------------------------
 app.post('/api/update-newsletter', ensureAdmin, async (req, res) => {
-  const { topic, content, previewImageBase64, oldPreviewImageUrl, isEditMode } = req.body;
+  const { name, topic, content, previewImageBase64, oldPreviewImageUrl, isEditMode } = req.body;
 
-  if (!topic || !content) {
-    return res.status(400).json({ error: 'Topic and content are required.' });
+  if (!name || !topic || !content) {
+    return res.status(400).json({ error: 'Name, topic and content are required.' });
   }
 
   try {
@@ -807,7 +807,7 @@ app.post('/api/update-newsletter', ensureAdmin, async (req, res) => {
 
     const newsletterRef = db.collection('latestNewsletter').doc('current');
     await newsletterRef.set({
-      name: "Janmat'25", // Assuming a fixed name for the latest newsletter
+      name: name, // Use the name from the request
       topic,
       previewImageUrl,
       content: finalContent,
@@ -937,7 +937,7 @@ app.post('/api/contact-submission', async (req, res) => {
       email,
       subject,
       message,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(), // Use server timestamp
+      createdAt: admin.firestore.FieldValue.serverTimestamp(), // Use server timestamp
     });
     res.status(201).json({ success: true, message: 'Message sent successfully.' });
   } catch (error) {

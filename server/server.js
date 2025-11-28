@@ -20,6 +20,7 @@ const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const bcrypt = require('bcryptjs'); // For hashing passwords
 const connectDB = require(path.join(__dirname, 'config', 'database'));
 
 const { JSDOM } = require('jsdom'); // ✅ Import JSDOM for server-side DOM parsing
@@ -129,6 +130,81 @@ app.get('/api/auth/logout', (req, res) => {
 });
 // ⭐️⭐️⭐️ END OF ADDED ROUTE #2
 
+// ⭐️⭐️⭐️ ADDED ROUTE #3 — /auth/email-login
+app.post('/auth/email-login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      // Info contains the failure message from the strategy
+      return res.status(401).json({ error: info.message || 'Login failed. Please check your credentials.' });
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      // On successful login, return user data
+      return res.status(200).json({
+        success: true,
+        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      });
+    });
+  })(req, res, next);
+});
+// ⭐️⭐️⭐️ END OF ADDED ROUTE #3
+
+// ⭐️⭐️⭐️ ADDED ROUTE #4 — /auth/email-signup
+app.post('/auth/email-signup', async (req, res, next) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required.' });
+  }
+
+  try {
+    // Check if user already exists
+    const usersRef = db.collection('users');
+    const snapshot = await usersRef.where('email', '==', email).get();
+
+    if (!snapshot.empty) {
+      return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new user object
+    const newUser = {
+      name,
+      email,
+      password: hashedPassword,
+      role: 'user', // Default role
+      provider: 'email',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Add the new user to the 'users' collection
+    const docRef = await usersRef.add(newUser);
+
+    // Log the user in automatically after registration
+    req.login({ id: docRef.id, ...newUser }, (err) => {
+      if (err) {
+        return next(err);
+      }
+      res.status(201).json({
+        success: true,
+        message: 'Account created successfully.',
+        user: { id: docRef.id, name: newUser.name, email: newUser.email, role: newUser.role },
+      });
+    });
+  } catch (error) {
+    console.error('Error during email signup:', error);
+    res.status(500).json({ error: 'Internal server error during signup.' });
+  }
+});
+// ⭐️⭐️⭐️ END OF ADDED ROUTE #4
 
 // Test route
 app.get('/test', (req, res) => {
@@ -1006,24 +1082,29 @@ app.post('/api/add-comment', async (req, res) => {
 // User Like Comment Route
 // ----------------------------
 app.post('/api/like-comment', async (req, res) => {
-  const { blogId, commentId } = req.body;
-  if (!blogId || !commentId) {
-    return res.status(400).json({ error: 'Blog ID and Comment ID are required.' });
+  const { blogId, commentId, action } = req.body; // action is 'like' or 'unlike'
+  if (!blogId || !commentId || !action) {
+    return res.status(400).json({ error: 'Blog ID, Comment ID, and action are required.' });
   }
 
   try {
     const commentRef = db.collection('blogs').doc(blogId).collection('comments').doc(commentId);
+    const incrementValue = action === 'like' ? 1 : -1;
 
     if (req.isAuthenticated()) {
-      // If user is logged in, add them to the 'likedBy' array to track their like
-      const userIdentifier = { uid: req.user.id, email: req.user.email, role: req.user.role };
+      // If user is logged in, add/remove them from the 'likedBy' array
+      const userIdentifier = { uid: req.user.id, role: req.user.role };
+      const arrayUpdateOperation = action === 'like'
+        ? admin.firestore.FieldValue.arrayUnion(userIdentifier)
+        : admin.firestore.FieldValue.arrayRemove(userIdentifier);
+
       await commentRef.update({
-        likes: admin.firestore.FieldValue.increment(1),
-        likedBy: admin.firestore.FieldValue.arrayUnion(userIdentifier)
+        likes: admin.firestore.FieldValue.increment(incrementValue),
+        likedBy: arrayUpdateOperation
       });
     } else {
-      // If user is anonymous, just increment the like count
-      await commentRef.update({ likes: admin.firestore.FieldValue.increment(1) });
+      // If user is anonymous, just increment/decrement the like count
+      await commentRef.update({ likes: admin.firestore.FieldValue.increment(incrementValue) });
     }
 
     res.status(200).json({ success: true, message: 'Comment liked successfully.' });

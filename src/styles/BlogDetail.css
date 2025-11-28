@@ -263,17 +263,19 @@ html, body {
   cursor: not-allowed;
 }
 
-.admin-liked-comment {
-  border: 2px solid green;
-  border-radius: 10px; /* to match the item's border radius */
-  padding-bottom: 1.5rem; /* to make space for the badge */
+/* Styling for comments liked by an admin */
+.comment-item.admin-liked-comment {
+  background-color: #f0fff4; /* Light green background */
+  border: 1px solid #a7e9af; /* Subtle light green border */
+  padding-bottom: 2.5rem;    /* Extra padding to make space for the badge */
 }
 
+/* Styling for the "Liked by Admin" badge */
 .admin-liked-badge {
   position: absolute;
   bottom: 0.5rem;
   left: 1rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: bold;
-  color: green;
+  color: #d32f2f; /* Red text color */
 }

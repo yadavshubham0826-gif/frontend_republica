@@ -219,31 +219,62 @@ const BlogDetail = () => {
   };
 
   const handleCommentLike = async (commentId) => {
-    // Optimistically update the UI
-    setComments(prevComments =>
-      prevComments.map(comment =>
-        comment.id === commentId
-          ? { ...comment, likes: (comment.likes || 0) + 1 }
-          : comment
-      )
-    );
+    const comment = comments.find(c => c.id === commentId);
+    if (!comment) return;
+
+    // Determine if the comment is already liked by the current user/session
+    const isAlreadyLikedByUser = user && comment.likedBy?.some(liker => liker.uid === user.uid);
+    const anonymousLikes = JSON.parse(localStorage.getItem('anonymousLikes') || '[]');
+    const isAlreadyLikedAnonymously = !user && anonymousLikes.includes(commentId);
+    const isAlreadyLiked = isAlreadyLikedByUser || isAlreadyLikedAnonymously;
+
+    const action = isAlreadyLiked ? 'unlike' : 'like';
+
+    // Optimistic UI update
+    setComments(prevComments => {
+      return prevComments.map(comment => {
+        if (c.id === commentId) {
+          const newLikes = c.likes + (action === 'like' ? 1 : -1);
+          let newLikedBy = c.likedBy || [];
+
+          if (user) {
+            if (action === 'like') {
+              newLikedBy = [...newLikedBy, { uid: user.id, role: user.role }];
+            } else {
+              newLikedBy = newLikedBy.filter(liker => liker.uid !== user.uid);
+            }
+          }
+          return { ...c, likes: newLikes, likedBy: newLikedBy };
+        }
+        return c;
+      });
+    });
+
+    // Update localStorage for anonymous users
+    if (!user) {
+      const newAnonymousLikes = action === 'like'
+        ? [...anonymousLikes, commentId]
+        : anonymousLikes.filter(id => id !== commentId);
+      localStorage.setItem('anonymousLikes', JSON.stringify(newAnonymousLikes));
+    }
 
     try {
-      // Update the like count directly in Firestore
-      const commentRef = doc(db, "blogs", post.id, "comments", commentId);
-      await updateDoc(commentRef, {
-        likes: increment(1)
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/like-comment`, {
+        method: "POST",
+        credentials: 'include', // Important for sending session cookies
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blogId: post.id, commentId, action }),
       });
+
+      if (!response.ok) {
+        // If the server fails, we should ideally roll back the optimistic update.
+        // For simplicity here, we'll just log the error and refetch.
+        throw new Error('Server failed to process the like.');
+      }
+
     } catch (err) {
       console.error("Error liking comment:", err);
-      // Rollback UI on error
-      setComments(prevComments =>
-        prevComments.map(comment =>
-          comment.id === commentId
-            ? { ...comment, likes: (comment.likes || 1) - 1 }
-            : comment
-        )
-      );
+      fetchComments(); // Refetch comments to sync with the server state on error
     }
   };
 
@@ -356,7 +387,7 @@ const BlogDetail = () => {
             <div className="comment-list">
               {commentsLoading && <p>Loading comments...</p>}
               {!commentsLoading &&
-                comments.map((comment) => {
+                comments.map((comment) => {                  
                   const anonymousLikes = JSON.parse(localStorage.getItem('anonymousLikes') || '[]');
                   // Check if the current user's ID is in the likedBy array
                   const isLikedByUser = user && comment.likedBy?.some(liker => liker.uid === user.uid);
@@ -388,6 +419,7 @@ const BlogDetail = () => {
                           <button
                             className="like-btn"
                             onClick={() => handleCommentLike(comment.id)}
+                            disabled={false} // The logic is now handled inside the function
                           >
                             {isLikedByUser ? (
                               <svg
@@ -431,7 +463,7 @@ const BlogDetail = () => {
                         </div>
                       </div>
                       {isAdminLiked && (
-                        <span className="admin-liked-badge" style={{ color: "red" }}>
+                        <span className="admin-liked-badge">
                           Liked By Admin
                         </span>
                       )}

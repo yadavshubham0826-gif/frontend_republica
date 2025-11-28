@@ -57,21 +57,23 @@ module.exports = function(passport) {
   passport.use(
     new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
       try {
-        const user = await User.findOne({ email: email.toLowerCase(), authMethod: 'email' });
+        // 1. Find user by email in MongoDB.
+        const user = await User.findOne({ email: email.toLowerCase() });
 
         if (!user) {
+          // If no user is found, return the specific message.
           return done(null, false, { message: 'Email not registered.' });
         }
 
+        // 2. If user is found, compare the provided password with the stored hashed password.
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
+          // If passwords do not match, return the specific message.
           return done(null, false, { message: 'Incorrect password.' });
         }
         
-        // If you have an `updateLastLogin` method, you can call it here.
-        // await user.updateLastLogin(); 
-        
+        // 3. If everything matches, login is successful.
         return done(null, user);
       } catch (err) {
         console.error('Error in Local Strategy:', err);

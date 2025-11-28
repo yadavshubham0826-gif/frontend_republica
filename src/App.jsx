@@ -17,6 +17,7 @@ import LatestJanmat from "./pages/LatestJanmat";
 import AdminMessages from "./components/AdminMessages";
 import Notifications from "./pages/Notifications.jsx";
 import CreateAccount from "./pages/CreateAccount.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx"; // Import the new AuthCallback component
 
 import { ModalProvider } from "./context/ModalContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -42,6 +43,7 @@ function App() {
             <Route path="/latest-janmat" element={<LatestJanmat />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/create-account" element={<CreateAccount />} />
+            <Route path="/auth-callback" element={<AuthCallback />} />
           </Routes>
         </MainLayout>
       </Router>

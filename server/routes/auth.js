@@ -20,33 +20,20 @@ module.exports = function(db) {
 
   // Route to handle login failure
   router.get('/login-failure', (req, res) => {
-    res.redirect('https://republicadrcdu.vercel.app/login?error=true');
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=true`);
   });
 
   // Route to handle login success
   router.get('/login-success', (req, res) => {
     if (req.user) {
-      // User is authenticated. We'll pass their data to the frontend.
       const userData = {
         id: req.user.id,
         name: req.user.name,
         email: req.user.email,
         role: req.user.role,
       };
-
-      // This script sends the user data to a function on the parent window, then closes the popup.
-      res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <script>
-            window.opener.postMessage(${JSON.stringify({ type: 'google-login-success', user: userData })}, '${process.env.FRONTEND_URL}');
-            window.close();
-          </script>
-        </head>
-        <body>Authentication successful...</body>
-        </html>
-      `);
+      // Redirect to a frontend URL with user data as query parameters
+      res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
     } else {
       res.status(401).send('User not authenticated');
     }

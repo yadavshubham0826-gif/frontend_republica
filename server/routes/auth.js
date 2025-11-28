@@ -137,7 +137,7 @@ module.exports = function(db) {
         email,
         password: hashedPassword,
         role: 'user',
-        provider: 'email',
+        authMethod: 'email',
       });
       await newUser.save();
 

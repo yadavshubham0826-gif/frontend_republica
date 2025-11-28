@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user', // 'user' or 'admin'
   },
-  provider: {
+  authMethod: {
     type: String,
     required: true,
     default: 'email', // 'email' or 'google'

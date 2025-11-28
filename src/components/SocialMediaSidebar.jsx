@@ -7,7 +7,7 @@ const SocialMediaSidebar = () => {
 
       {/* LinkedIn */}
       <a
-        href="https://in.linkedin.com/"
+        href="https://www.linkedin.com/company/republica-the-political-science-department-daulat-ram-college"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="LinkedIn Profile"
@@ -41,7 +41,7 @@ const SocialMediaSidebar = () => {
 
       {/* Instagram */}
       <a
-        href="https://www.instagram.com/"
+        href="https://www.instagram.com/republica_drc/?igsh=MWlyZnh2NHJrd2c5aA%3D%3D#"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Instagram Profile"

@@ -1928,3 +1928,34 @@ h2[id], h1[id] {
     font-size: 14px;   /* Reduce font size */
   }
 }
+
+
+.btn-rect-3d {
+  background: #ffffff !important;
+  color: #000000 !important;
+
+  border: 3px solid #000000 !important;     /* SOLID BLACK RECTANGLE */
+  border-radius: 0 !important;              /* NO ROUNDED CORNERS */
+
+  padding: 12px 28px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+
+  display: inline-block !important;
+
+  box-shadow: 0 6px 0 #000000 !important;   /* 3D SHADOW */
+
+  transition: all 0.15s ease-out !important;
+  cursor: pointer !important;
+}
+
+.btn-rect-3d:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 9px 0 #000000 !important;
+}
+
+.btn-rect-3d:active {
+  transform: translateY(3px) !important;
+  box-shadow: 0 2px 0 #000000 !important;
+}

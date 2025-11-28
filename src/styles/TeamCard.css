@@ -1,0 +1,53 @@
+.teamcard-container {
+  text-align: center;
+  width: 250px;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* FLOATING GLOWING CIRCLE */
+.teamcard-image-wrapper {
+  width: 250px;
+  height: 250px;
+
+  margin: 0 auto 18px auto;
+
+  border-radius: 70%;
+  overflow: hidden;
+  position: relative;
+
+  border: 4px solid rgba(255, 255, 255, 0.842);
+
+  animation: float 4s ease-in-out infinite;
+
+  box-shadow: 
+      0 0 12px rgba(243, 204, 46, 1),
+      0 0 18px rgba(232, 206, 10, 0.3);
+}
+
+/* IMAGE MUST BE CIRCULAR */
+.teamcard-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+}
+
+/* NAME + ROLE */
+.teamcard-name {
+  margin: 6px 0 2px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.teamcard-role {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+/* FLOAT ANIMATION */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+  100% { transform: translateY(0px); }
+}

@@ -7,7 +7,8 @@ import { db } from '../firebase-config.js'; // Import Firestore instance
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Import Firestore functions
 import '../styles/style.css';
 import '../styles/HomeGallery.css';
-
+import TeamCard from "./TeamCard";
+import React from "react";
 const Home = () => {
   const [allPosts, setAllPosts] = useState([]);
   const [latestPosts, setLatestPosts] = useState([]);
@@ -144,52 +145,25 @@ const Home = () => {
         />
       </section>
 
+
+
       {/* -------------------- ABOUT SECTION -------------------- */}
+
       <section id="about" className="section">
-        <div className="container grid two">
+        <div className="container">
           <FadeInSection delay={0.1}>
-            <div className="card homepage-blog-item">
+            <div className="white-box">
               <h2>About the Society</h2>
               <p>Describe your mission, activities, and impact. This is placeholder text.</p>
-              <Link to="/about" className="btn">View More</Link>
-            </div>
+              <Link to="/about" className="btn-rect-3d">Know More</Link>
+                          </div>
           </FadeInSection>
-          <FadeInSection delay={0.2}>
-            <div className="card placeholder-media homepage-blog-item" aria-hidden="true"></div>
-          </FadeInSection>
-        </div>
+                  </div>
       </section>
-<section id="team" className="section light">
-        <div className="container">
-          <FadeInSection>
-            <h2>Our Team</h2>
-            <p>List of core members. Replace names, roles, and photos later.</p>
-          </FadeInSection>
-          <div className="grid three team-grid">
-            <FadeInSection delay={0.1}>
-              <article className="card person">
-                <div className="avatar" aria-hidden="true"></div>
-                <h3>Member Name</h3>
-                <p className="muted">Role / Position</p>
-              </article>
-            </FadeInSection>
-            <FadeInSection delay={0.2}>
-              <article className="card person">
-                <div className="avatar" aria-hidden="true"></div>
-                <h3>Member Name</h3>
-                <p className="muted">Role / Position</p>
-              </article>
-            </FadeInSection>
-            <FadeInSection delay={0.3}>
-              <article className="card person">
-                <div className="avatar" aria-hidden="true"></div>
-                <h3>Member Name</h3>
-                <p className="muted">Role / Position</p>
-              </article>
-            </FadeInSection>
-          </div>
-        </div>
-      </section>
+      {/*---------------------Team Section----------------------*/}
+      <TeamSection />
+
+
 
       {/* -------------------- BLOG SECTION -------------------- */}
       <div 
@@ -348,3 +322,67 @@ const Home = () => {
 };
 
 export default Home;
+
+function TeamSection() {
+  const styles = {
+    wrapper: {
+      marginTop: "60px",
+      display: "flex",
+      gap: "60px",
+      justifyContent: "center",
+      flexWrap: "wrap",
+    },
+  };
+
+  return (
+    <section id="team" className="section light">
+      <div className="container">
+        <FadeInSection>
+          <h2
+            style={{
+              color: "hsla(0, 18%, 4%, 1.00)",
+              fontFamily: "Montserrat, sans-serif",
+              textAlign: "center",
+            }}
+          >
+            Meet The Union
+          </h2>
+        </FadeInSection>
+
+     <div style={styles.wrapper}>
+  <TeamCard
+    img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Isha_Yadav_President_eugnlb.jpg"
+    name="Isha Yadav"
+    role="PRESIDENT"
+  />
+  <TeamCard
+    img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764336560/Divyanshe_my2ao0.jpg"
+    name="Divyanshe"
+    role="Treasurer"
+  />
+  <TeamCard
+    img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Khushi_VP_zmnvxd.jpg"
+    name="Khushi Iwanathe"
+    role="Vice President"
+  />
+  <TeamCard
+  img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Kaumudi_General_Secretary_aqwayg.jpg"
+  name="Kaumudi Sharma"
+  role="General Secretary"
+  />
+  <TeamCard
+  img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Rashi_JS_n4dpcw.jpg"
+  name="Rashi"
+  role="Joint Secretary"
+  />
+   <TeamCard
+  img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764338162/Vashu_vnjjtb.jpg"
+  name="Vashu Yadav"
+  role="Cultural Secretary"
+  />
+</div>
+
+      </div>
+    </section>
+  );
+}

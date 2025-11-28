@@ -192,7 +192,7 @@ const Header = () => {
               <ul className="dropdown-menu">
                 <li><Link to="/academics" onClick={handleNavClick}>Department & Faculty</Link></li>
                 <li onClick={handleNavClick}>
-                  <a href="#" target="_blank" rel="noopener noreferrer" onClick={handleNavClick}>E-Library</a>
+                  <a href="https://drive.google.com/drive/folders/1Ys-ha5GznZjFtOlXUPuvJswT1c7aHnGU?usp=drive_link" target="_blank" rel="noopener noreferrer" onClick={handleNavClick}>E-Library</a>
                 </li>
               </ul>
             </li>

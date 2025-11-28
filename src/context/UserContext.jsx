@@ -83,43 +83,10 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // AUTH CHECK (run once only)
+  // ⚡ FAST AUTH LOAD — no backend request on page load
   useEffect(() => {
-    if (authCheckRan.current) return;
-    authCheckRan.current = true;
-
-    const checkAuth = async () => {
-      console.log("Checking backend authentication…");
-
-      const data = await fetchWithRetry(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/check`,
-        { credentials: 'include' },
-        1,  // only try once
-        1000
-      );
-
-      if (data.authenticated && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setUser(data.user);
-        setUsername(data.user.name || data.user.displayName || null);
-        setUserEmail(data.user.email || null);
-        setRole(data.user.role || null);
-        setIsAuthenticated(true);
-        console.log("Authenticated:", data.user.email);
-      } else {
-        localStorage.removeItem('user');
-        setUser(null);
-        setUsername(null);
-        setUserEmail(null);
-        setRole(null);
-        setIsAuthenticated(false);
-        console.log("Not authenticated.");
-      }
-
-      setLoading(false);
-    };
-
-    checkAuth();
+    // User from localStorage already loaded
+    setLoading(false);
   }, []);
 
   // Sync login/logout across tabs

@@ -92,8 +92,11 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
                 </a>.
               </>
             );
+          } else if (data.error === 'Incorrect password.') {
+            // Case 3: Specifically for incorrect password
+            setError('The password you entered is incorrect.');
           } else {
-            // Case 3: For "Incorrect password." or any other 401 error
+            // Case 4: For any other 401 error
             setError('Invalid Credentials');
           }
         } else {

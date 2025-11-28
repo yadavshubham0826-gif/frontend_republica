@@ -232,14 +232,14 @@ const BlogDetail = () => {
 
     // Optimistic UI update
     setComments(prevComments => {
-      return prevComments.map(comment => {
+      return prevComments.map(c => {
         if (c.id === commentId) {
-          const newLikes = c.likes + (action === 'like' ? 1 : -1);
+          const newLikes = (c.likes || 0) + (action === 'like' ? 1 : -1);
           let newLikedBy = c.likedBy || [];
 
           if (user) {
             if (action === 'like') {
-              newLikedBy = [...newLikedBy, { uid: user.id, role: user.role }];
+              newLikedBy = [...newLikedBy, { uid: user.uid, role: user.role }];
             } else {
               newLikedBy = newLikedBy.filter(liker => liker.uid !== user.uid);
             }

@@ -100,7 +100,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 // ----------------------------
 console.log('Loading auth routes...');
-app.use('/auth', require(path.join(__dirname, 'routes', 'auth')));
+// Pass the db instance to the auth router
+const authRouter = require(path.join(__dirname, 'routes', 'auth'))(db);
+app.use('/auth', authRouter);
+
 
 // API route to get user data
 // ⭐️⭐️⭐️ ADDED ROUTE #1 — /api/auth/check

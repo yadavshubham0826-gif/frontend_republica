@@ -35,6 +35,25 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
     );
   };
 
+  // This effect listens for the message from the Google login popup
+  useEffect(() => {
+    const handleLoginMessage = (event) => {
+      // Ensure the message is from a trusted origin
+      if (event.origin !== import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')) {
+        return;
+      }
+
+      const { type, user } = event.data;
+      if (type === 'google-login-success' && user) {
+        login(user); // Use the login function from context
+        onClose();   // Close the modal
+      }
+    };
+
+    window.addEventListener('message', handleLoginMessage);
+    return () => window.removeEventListener('message', handleLoginMessage);
+  }, [login, onClose]);
+
   // When the user becomes authenticated globally, close this modal.
   useEffect(() => {
     if (isAuthenticated) {

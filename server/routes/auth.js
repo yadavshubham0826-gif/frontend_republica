@@ -25,23 +25,31 @@ module.exports = function(db) {
 
   // Route to handle login success
   router.get('/login-success', (req, res) => {
-    // This route is hit by the popup window after a successful Google login.
-    // We send a script to the popup that closes itself and tells the main window to reload.
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Authentication Success</title>
-        <script>
-          window.opener.location.reload(); // Reload the main window
-          window.close(); // Close the popup
-        </script>
-      </head>
-      <body>
-        <p>Authentication successful. You can close this window.</p>
-      </body>
-      </html>
-    `);
+    if (req.user) {
+      // User is authenticated. We'll pass their data to the frontend.
+      const userData = {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role,
+      };
+
+      // This script sends the user data to a function on the parent window, then closes the popup.
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <script>
+            window.opener.postMessage(${JSON.stringify({ type: 'google-login-success', user: userData })}, '${process.env.FRONTEND_URL}');
+            window.close();
+          </script>
+        </head>
+        <body>Authentication successful...</body>
+        </html>
+      `);
+    } else {
+      res.status(401).send('User not authenticated');
+    }
   });
 
   // === EMAIL & OTP ROUTES ===

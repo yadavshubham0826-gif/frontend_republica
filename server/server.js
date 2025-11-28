@@ -36,10 +36,40 @@ app.set('trust proxy', 1); // Important for Render behind proxy
 const port = process.env.PORT || 5000;
 
 // ----------------------------
-// Database Connection
+// Database Connections
 // ----------------------------
 connectDB();
 
+// ----------------------------
+// Firebase Admin SDK Initialization
+// ----------------------------
+const { getFirestore } = require('firebase-admin/firestore');
+const admin = require('firebase-admin');
+
+let serviceAccount;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  // In production (Render), parse the JSON from the environment variable
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+  } catch (e) {
+    console.error("Error parsing FIREBASE_SERVICE_ACCOUNT_JSON:", e);
+    process.exit(1); // Exit if the service account is invalid
+  }
+} else {
+  // In local development, load from the file
+  serviceAccount = require('./config/firebase-service-account.json');
+}
+
+// Initialize Firebase Admin if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+  console.log("✅ Firebase Admin SDK Initialized Successfully.");
+} else {
+  console.log("Firebase Admin SDK already initialized.");
+}
+const db = getFirestore();
 // ----------------------------
 // Passport configuration
 // ----------------------------
@@ -320,30 +350,6 @@ app.post('/cloudinary/delete-image', ensureAdmin, async (req, res) => { // <-- S
 // ----------------------------
 // Admin Delete Album Route
 // ----------------------------
-const { getFirestore } = require('firebase-admin/firestore');
-const admin = require('firebase-admin');
-
-let serviceAccount;
-if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
-  // In production (Render), parse the JSON from the environment variable
-  serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-} else {
-  // In local development, load from the file
-  serviceAccount = require('./config/firebase-service-account.json');
-}
-
-// Initialize Firebase Admin if not already initialized
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-  console.log("✅ Firebase Admin SDK Initialized Successfully.");
-} else {
-  console.log("Firebase Admin SDK already initialized.");
-}
-
-const db = getFirestore();
-
 app.post('/api/delete-album', ensureAdmin, async (req, res) => { // <-- Secure this route
   try {
     const { albumId } = req.body;

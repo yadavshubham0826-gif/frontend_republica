@@ -240,12 +240,14 @@ app.post('/auth/send-otp', async (req, res) => {
 
   // 4. Send Email
   try {
-    // Configure nodemailer transporter (using environment variables)
+    // Configure nodemailer transporter with explicit settings for Gmail
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // Or your preferred email service
+      host: 'smtp.gmail.com',
+      port: 465, // Use port 465 for SSL
+      secure: true, // This is important for port 465
       auth: {
-        user: process.env.EMAIL_USER, // Your email address from .env
-        pass: process.env.EMAIL_PASS, // Your email password or app password from .env
+        user: process.env.EMAIL_USER, // Your full Gmail address from .env
+        pass: process.env.EMAIL_PASS, // Your 16-character Google App Password from .env
       },
     });
 
@@ -260,6 +262,7 @@ app.post('/auth/send-otp', async (req, res) => {
 
     console.log(`OTP sent to ${email}`);
     res.status(200).json({ success: true, message: 'OTP sent successfully.' });
+
   } catch (error) {
     console.error('Error sending OTP email:', error);
     res.status(500).json({ error: 'Failed to send verification email.' });

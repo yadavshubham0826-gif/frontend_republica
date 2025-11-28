@@ -39,7 +39,14 @@ const AdminMessages = () => {
             throw new Error(errorData.error || 'Failed to fetch messages.');
           }
           const data = await response.json();
-          setMessages(data);
+
+          // Normalize timestamps
+          const dataWithTimestamps = data.map(msg => ({
+            ...msg,
+            timestamp: msg.timestamp || msg.createdAt || null
+          }));
+
+          setMessages(dataWithTimestamps);
         } catch (err) {
           console.error("Error fetching messages:", err);
           setError('Failed to load messages.');
@@ -109,9 +116,9 @@ const AdminMessages = () => {
                   </div>
                   <div className="message-meta">
                     <span className="message-date">
-                      {console.log("message.timestamp", message.timestamp)}
-                      {console.log("message.createdAt", message.createdAt)}
-                      {message.timestamp ? new Date(message.timestamp.seconds * 1000).toLocaleString() : (message.createdAt ? new Date(message.createdAt.seconds * 1000).toLocaleString() : 'No date')}
+                      {message.timestamp 
+                        ? new Date(message.timestamp.seconds * 1000).toLocaleString() 
+                        : 'No date'}
                     </span>
                     <button
                       className="delete-btn"

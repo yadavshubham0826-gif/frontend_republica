@@ -129,9 +129,8 @@ const AdminMessages = () => {
                   </div>
                   <div className="message-meta">
                     <span className="message-date">
-                      {message.timestamp 
-                        ? new Date(message.timestamp.seconds * 1000).toLocaleString() 
-                        : 'No date'}
+                     {message.date ? message.date.toLocaleString() : 'No date'}
+
                     </span>
                     <button
                       className="delete-btn"

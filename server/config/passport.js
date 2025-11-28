@@ -65,6 +65,12 @@ module.exports = function(passport) {
           return done(null, false, { message: 'Email not registered.' });
         }
 
+        // If user was created via Google, they won't have a password.
+        // Deny login and prompt them to use Google sign-in.
+        if (!user.password) {
+          return done(null, false, { message: 'Incorrect password.' });
+        }
+
         // 2. If user is found, compare the provided password with the stored hashed password.
         const isMatch = await bcrypt.compare(password, user.password);
 

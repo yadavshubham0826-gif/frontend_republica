@@ -65,57 +65,52 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
       let data;
       try { data = await response.json(); } catch { data = {}; }
 
-      if (data.status === "google_auth_required") {
-        setError(
-          <>
-            This account is linked to Google. Please{" "}
-            <a
-              href="#"
-              className="login-link"
-              onClick={(e) => { e.preventDefault(); handleGoogleLogin(); }}
-            >
-              Continue with Google
-            </a>.
-          </>
-        );
-        return;
-      }
-
-      if (data.status === "email_not_found") {
-        setError(
-          <>
-            Looks like you’re new. Please{" "}
-            <a
-              href="#"
-              className="login-link"
-              onClick={(e) => { e.preventDefault(); if (onSwitchToSignup) onSwitchToSignup(); }}
-            >
-              Create an Account
-            </a>.
-          </>
-        );
-        return;
-      }
-
-      if (data.status === "invalid_password") {
-        setError("Invalid credentials.");
-        return;
-      }
-
       if (!response.ok) {
-        setError(data.message || `An error occurred (code ${response.status}).`);
-        return;
+        // This block handles all non-200 responses, including 401
+        if (response.status === 401) {
+          // Case 1: User does not exist
+          if (data.error === 'Email not registered.') {
+            setError(
+              <>
+                Looks! Like You are New?{' '}
+                <a href="#" className="login-link" onClick={(e) => { e.preventDefault(); onSwitchToSignup(); }}>
+                  Create an Account
+                </a>
+              </>
+            );
+          // Case 2: User exists but signed up with Google
+          } else if (data.error === 'google_auth_required') {
+            setError(
+              <>
+                This account is linked to Google. Please{' '}
+                <a
+                  href="#"
+                  className="login-link"
+                  onClick={(e) => { e.preventDefault(); handleGoogleLogin(); }}
+                >
+                  Continue with Google
+                </a>.
+              </>
+            );
+          } else {
+            // Case 3: For "Incorrect password." or any other 401 error
+            setError('Invalid Credentials');
+          }
+        } else {
+          // For other server errors (500, etc.)
+          setError(data.error || 'An unexpected error occurred.');
+        }
+      } else {
+        // This handles a successful login (status 200)
+        if (data.success && data.user) {
+          login(data.user);
+          onClose();
+          setToastMessage(`Welcome back, ${data.user.name.split(' ')[0]}!`);
+          setShowToast(true);
+        } else {
+          setError(data.message || "An unexpected error occurred. Please try again.");
+        }
       }
-
-      if (data.success && data.user) {
-        login(data.user);
-        onClose();
-        setToastMessage(`Welcome back, ${data.user.name.split(' ')[0]}!`);
-        setShowToast(true);
-        return;
-      }
-
-      setError(data.message || "An unexpected error occurred. Please try again.");
     } catch (err) {
       console.error("Email login error:", err);
       setError("An unexpected error occurred. Please try again.");

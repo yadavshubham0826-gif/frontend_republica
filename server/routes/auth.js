@@ -1,7 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
+const { sendOTPEmail } = require('../services/otpService'); // Import the new OTP service
 const admin = require('firebase-admin');
 const User = require('../models/User'); // ✅ Import the Mongoose User model
 
@@ -67,25 +67,7 @@ module.exports = function(db) {
     req.session.emailForVerification = email;
 
     try {
-      // Configure nodemailer to use Resend's SMTP server
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.resend.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: 'resend', // This is always 'resend'
-          pass: process.env.RESEND_API_KEY, // Your Resend API key
-        },
-      });
-
-      const mailOptions = {
-        from: '"Republica DRC" <yadavshubhamahir26@gmail.com>', // ✅ Use the exact email you verified as a Single Sender
-        to: email,
-        subject: 'Your Verification Code for Republica',
-        html: `<p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
-      };
-
-      await transporter.sendMail(mailOptions);
+      await sendOTPEmail(email, otp); // Use the new OTP service
       console.log(`OTP sent to ${email}`);
       res.status(200).json({ success: true, message: 'OTP sent successfully.' });
 
@@ -99,28 +81,109 @@ module.exports = function(db) {
   router.post('/verify-otp', async (req, res) => {
     const { email, otp } = req.body;
 
+    console.log('--- VERIFY OTP Request ---');
+    console.log('Request Body:', { email, otp });
+    console.log('Session Data (emailForVerification):', req.session.emailForVerification);
+    console.log('Session Data (otp):', req.session.otp);
+    console.log('Session Data (otpExpires):', new Date(req.session.otpExpires));
+    console.log('Current Time:', new Date(Date.now()));
+
     // 1. Basic validation
     if (!email || !otp) {
+      console.log('DEBUG: Email or OTP missing in request body.');
       return res.status(400).json({ error: 'Email and OTP are required.' });
     }
 
     // 2. Check session data
     if (email !== req.session.emailForVerification) {
+      console.log('DEBUG: Email mismatch. Request:', email, 'Session:', req.session.emailForVerification);
       return res.status(400).json({ error: 'Email does not match the one used for OTP request.' });
     }
     if (otp !== req.session.otp) {
+      console.log('DEBUG: OTP mismatch. Request:', otp, 'Session:', req.session.otp);
       return res.status(400).json({ error: 'Invalid OTP.' });
     }
     if (Date.now() > req.session.otpExpires) {
+      console.log('DEBUG: OTP expired.');
       return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
     }
 
     // 3. If all checks pass, clear OTP from session and send success
     req.session.otp = null;
     req.session.otpExpires = null;
+    console.log('DEBUG: OTP verified successfully.');
     res.status(200).json({ success: true, message: 'OTP verified successfully.' });
   });
 
+  // FORGOT PASSWORD
+  router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+      req.session.otp = otp;
+      req.session.otpExpires = otpExpires;
+      req.session.emailForPasswordReset = email;
+
+      await sendOTPEmail(email, otp);
+
+      res.status(200).json({ success: true, message: 'OTP for password reset sent.' });
+    } catch (error) {
+      console.error('Error in forgot password:', error);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+
+  // RESET PASSWORD
+  router.post('/reset-password', async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+
+    console.log('--- RESET PASSWORD Request ---');
+    console.log('Request Body Email:', email);
+    console.log('Request Body OTP:', otp);
+    console.log('Session Email For Password Reset:', req.session.emailForPasswordReset);
+    console.log('Session OTP:', req.session.otp);
+    console.log('Session OTP Expires:', new Date(req.session.otpExpires));
+    console.log('Current Time:', new Date(Date.now()));
+
+    if (!email || !otp || !newPassword) {
+      console.log('DEBUG: Email, OTP, or new password missing in request body.');
+      return res.status(400).json({ error: 'Email, OTP, and new password are required.' });
+    }
+
+    if (email !== req.session.emailForPasswordReset || otp !== req.session.otp || Date.now() > req.session.otpExpires) {
+      console.log('DEBUG: OTP verification failed in /reset-password.');
+      console.log('Email match:', email === req.session.emailForPasswordReset);
+      console.log('OTP match:', otp === req.session.otp);
+      console.log('OTP not expired:', Date.now() <= req.session.otpExpires);
+      return res.status(400).json({ error: 'Invalid or expired OTP.' });
+    }
+
+    try {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      await User.updateOne({ email }, { password: hashedPassword });
+
+      req.session.destroy(); // Clear session after password reset
+
+      res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  });
+  
   // EMAIL SIGNUP
   router.post('/email-signup', async (req, res, next) => {
     const { name, email, password } = req.body;

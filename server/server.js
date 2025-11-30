@@ -1,3 +1,6 @@
+// --- SERVER.JS START ---
+console.log('--- server.js started ---');
+
 // ----------------------------
 // server.js
 // ----------------------------
@@ -110,13 +113,24 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'keyboardcat',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
   cookie: {
-    secure: true,                  // HTTPS only
+    // IMPORTANT: For local development over HTTP, `secure` must be false.
+    // For production deployment over HTTPS, `secure` must be true and `sameSite` should be 'none'.
+    secure: process.env.NODE_ENV === 'production', // Set to true in production (HTTPS)
     httpOnly: true,                // JS cannot read cookie
-    sameSite: 'none',              // allows cross-site (Vercel frontend)
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Use 'none' for production (cross-site), 'lax' for local dev.
     maxAge: 1000 * 60 * 60 * 24    // 1 day
   }
 }));
+
+console.log(`Session Cookie Settings:
+  Secure: ${process.env.NODE_ENV === 'production'}
+  SameSite: ${process.env.NODE_ENV === 'production' ? 'none' : 'lax'}
+  HTTP Only: true
+  Max Age: 1 day
+  NODE_ENV: ${process.env.NODE_ENV}
+`);
 
 
 // Passport middleware

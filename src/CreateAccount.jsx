@@ -27,6 +27,7 @@ function CreateAccount() {
             const response = await fetch(`${API_URL}/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ email }),
             });
 
@@ -37,6 +38,9 @@ function CreateAccount() {
             }
 
             setMessage({ text: data.message, type: 'success' });
+            setTimeout(() => {
+                setMessage({ text: '', type: '' });
+            }, 10000);
             setStep(2); // Move to OTP verification step
         } catch (error) {
             setMessage({ text: error.message, type: 'error' });
@@ -58,6 +62,7 @@ function CreateAccount() {
             const response = await fetch(`${API_URL}/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ email, otp }),
             });
 
@@ -116,6 +121,9 @@ function CreateAccount() {
             {step === 2 && (
                 <form onSubmit={handleVerifyOtp}>
                     <p>An OTP has been sent to <strong>{email}</strong>.</p>
+                    <p style={{ color: 'red', fontSize: '0.9em' }}>
+                        Sometimes Mails go to Spam Folder. Please Check Your Spam Folder.
+                    </p>
                     <div className="form-group">
                         <label htmlFor="otp">Enter 6-Digit OTP</label>
                         <input

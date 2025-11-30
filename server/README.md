@@ -49,6 +49,17 @@ JWT_SECRET=your_secret_key_min_32_chars
 FRONTEND_URL=http://localhost:3001
 ```
 
+### Google SMTP Environment Variables
+
+To use Google SMTP for sending emails, you need to configure the following environment variables. You can get the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from the Google API Console. The `GOOGLE_REFRESH_TOKEN` can be obtained using the OAuth 2.0 Playground.
+
+```env
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REFRESH_TOKEN=your_google_refresh_token
+EMAIL_USERNAME=your_email@gmail.com
+```
+
 ## Database Schema
 
 ### User Model

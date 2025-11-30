@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import { useUser } from '../context/UserContext';
 import "./EmailSignupModal.css"; // Your CSS file
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
   const [email, setEmail] = useState("");
@@ -38,6 +41,7 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ email }),
       });
       const data = await res.json();
@@ -62,6 +66,9 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
         setStep("otp");
         setTimer(60);
         displayMessage("OTP sent to your email.");
+        setTimeout(() => {
+          displayMessage("");
+        }, 10000);
       } else displayError(data.message || "Failed to send OTP");
     } catch (err) {
       console.error(err);
@@ -81,6 +88,7 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ email, otp }),
       });
       const data = await res.json();
@@ -245,8 +253,19 @@ const EmailSignupModal = ({ onClose = () => {}, onSwitchToLogin }) => {
                 <input id="name" type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
               <div className="form-group">
-                <label htmlFor="dob">Date of Birth</label>
-                <input id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required />
+                
+  <label htmlFor="dob">Date of Birth</label>
+  <DatePicker
+    selected={dateOfBirth ? new Date(dateOfBirth) : null}
+    onChange={(date) => setDateOfBirth(date.toISOString().split("T")[0])}
+    dateFormat="dd/MM/yyyy"
+    showYearDropdown
+    showMonthDropdown
+    dropdownMode="select"
+    maxDate={new Date()}
+    placeholderText="Select your date of birth"
+    className="modern-datepicker"
+  />
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>

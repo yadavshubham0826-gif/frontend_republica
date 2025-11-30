@@ -56,7 +56,7 @@ function About() {
         </section>
 
         <section className="team-section">
-          <h2 className="team-title">Editorial-In-Chiefs</h2>
+          <h2 className="team-title">Editor-In-Chiefs</h2>
           <div className="team-box">
             <img src="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764346011/Screenshot_2025-11-28_213556_po2zse.jpg" alt="" />
             <h3>Afeefa Nasir</h3>

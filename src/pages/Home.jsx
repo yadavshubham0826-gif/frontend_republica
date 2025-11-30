@@ -220,6 +220,7 @@ const Home = () => {
           )}
         </div>
       </div>
+
  <section id="academics" className="section">
         <div className="container">
           <FadeInSection>
@@ -250,7 +251,7 @@ const Home = () => {
           </div>
           <FadeInSection delay={0.4}>
             <div className="text-center">
-              <Link to="/academics" className="btn">View More</Link>
+              <Link to="/academics" className="btn-rect-3d">View More</Link>
             </div>
           </FadeInSection>
         </div>

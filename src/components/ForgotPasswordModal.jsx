@@ -10,7 +10,7 @@ const ForgotPasswordModal = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [step, setStep] = useState("request"); // 'request', 'verify', 'reset'
+  const [step, setStep] = useState("request"); // 'request', 'reset'
 
   // Step 1: Request OTP
   const handleSendOtp = async (e) => {
@@ -20,63 +20,34 @@ const ForgotPasswordModal = ({ onClose }) => {
     setMessage("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/forgot-password-request`, { // Assuming this is your forgot password route
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        credentials: 'include', // Add this line
       }); 
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to send OTP.");
+        throw new Error(data.error || "Failed to send OTP.");
       }
 
       setMessage(data.message);
-      setStep("verify"); // Move to OTP verification step
-
-    } catch (err) {
-      setError(err.message || "An error occurred.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Step 2: Verify OTP (and then allow password reset)
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otp || otp.length !== 6) {
-      setError("Please enter a valid 6-digit OTP.");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    setMessage("");
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Invalid OTP.");
-      }
-
-      setMessage("OTP verified successfully. Please set a new password.");
+      setTimeout(() => {
+        setMessage("");
+      }, 10000);
       setStep("reset"); // Move to password reset step
 
     } catch (err) {
-      setError(err.message || "OTP verification failed.");
-    } finally {
+      setError(err.message || "An error occurred.");
+    }
+    finally {
       setLoading(false);
     }
   };
 
-  // Step 3: Reset Password
+  // Step 2: Reset Password
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (newPassword.length < 6) {
@@ -96,22 +67,24 @@ const ForgotPasswordModal = ({ onClose }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp, newPassword }),
+        credentials: 'include',
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to reset password.");
+      if (!response.ok) throw new Error(data.error || "Failed to reset password.");
 
       setMessage("Password has been reset successfully! You can now log in.");
       setTimeout(() => onClose(), 2000); // Close modal after a delay
     } catch (err) {
       setError(err.message || "OTP verification failed.");
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
 
   return ReactDOM.createPortal(
-    <div className="login-modal-backdrop">
-      <div className="login-modal">
+    <div className="login-modal-backdrop" onClick={onClose}>
+      <div className="login-modal" onClick={(e) => e.stopPropagation()}>
         <button className="close-modal-btn" onClick={onClose}>
           ×
         </button>
@@ -122,15 +95,15 @@ const ForgotPasswordModal = ({ onClose }) => {
               Enter your email to receive a password reset OTP.
             </p>
           )}
-          {step === "verify" && (
-            <p className="login-modal-subtitle">
-              An OTP has been sent to <strong>{email}</strong>.
-            </p>
-          )}
           {step === "reset" && (
-            <p className="login-modal-subtitle">
-              Create a new password for your account.
-            </p>
+            <>
+              <p className="login-modal-subtitle">
+                An OTP has been sent to <strong>{email}</strong>. Enter the OTP and your new password.
+              </p>
+              <p style={{ color: 'red', fontSize: '0.9em' }}>
+                Sometimes Mails go to Spam Folder. Please Check Your Spam Folder.
+              </p>
+            </>
           )}
 
           {error && <div className="error-message">{error}</div>}
@@ -156,8 +129,8 @@ const ForgotPasswordModal = ({ onClose }) => {
             </form>
           )}
 
-          {step === "verify" && (
-            <form onSubmit={handleVerifyOtp} className="email-login-form">
+          {step === "reset" && (
+            <form onSubmit={handleResetPassword} className="email-login-form">
               <div className="form-group">
                 <label htmlFor="otp">Enter 6-Digit OTP</label>
                 <input
@@ -170,14 +143,6 @@ const ForgotPasswordModal = ({ onClose }) => {
                   required
                 />
               </div>
-              <button type="submit" className="submit-btn" disabled={loading}>
-                {loading ? "Verifying..." : "Verify OTP"}
-              </button>
-            </form>
-          )}
-
-          {step === "reset" && (
-            <form onSubmit={handleResetPassword} className="email-login-form">
               <div className="form-group">
                 <label htmlFor="new-password">New Password</label>
                 <input

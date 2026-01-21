@@ -28,11 +28,96 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
 
-    window.open(
+    console.log('🔵 LoginModal: Opening Google OAuth popup', googleLoginUrl);
+
+    const popup = window.open(
       googleLoginUrl,
       "Google Login",
       `width=${width},height=${height},top=${top},left=${left}`
     );
+
+    if (!popup) {
+      console.error('❌ LoginModal: Failed to open popup (blocked?)');
+      setError('Popup was blocked. Please allow popups for this site.');
+      setLoading(false);
+      return;
+    }
+
+    let messageReceived = false;
+
+    // Listen for messages from the popup
+    const messageHandler = (event) => {
+      console.log('📨 LoginModal: Received message', event.data, 'from origin:', event.origin);
+      
+      // Verify the origin for security (allow both frontend and backend origins)
+      const frontendOrigin = window.location.origin;
+      const backendUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const backendOrigin = backendUrl ? new URL(backendUrl).origin : null;
+      
+      const allowedOrigins = [frontendOrigin];
+      if (backendOrigin) allowedOrigins.push(backendOrigin);
+      
+      if (!allowedOrigins.includes(event.origin)) {
+        console.warn('⚠️ Message from unexpected origin:', event.origin, 'Allowed:', allowedOrigins);
+        return;
+      }
+
+      if (event.data?.type === 'authSuccess' && event.data.user) {
+        messageReceived = true;
+        console.log('✅ LoginModal: Received auth success message', event.data.user);
+        try {
+          login(event.data.user);
+          setLoading(false);
+          setToastMessage(`Welcome, ${event.data.user.name?.split(' ')[0] || 'User'}!`);
+          setShowToast(true);
+          onClose();
+        } catch (error) {
+          console.error('❌ LoginModal: Error during login:', error);
+          setError('Failed to complete login. Please try again.');
+          setLoading(false);
+        }
+        cleanup();
+      } else if (event.data?.type === 'authError') {
+        messageReceived = true;
+        console.error('❌ LoginModal: Auth error from popup', event.data.error);
+        setError(event.data.error || 'Authentication failed. Please try again.');
+        setLoading(false);
+        cleanup();
+      }
+    };
+
+    const cleanup = () => {
+      window.removeEventListener('message', messageHandler);
+      if (checkPopupClosed) clearInterval(checkPopupClosed);
+    };
+
+    window.addEventListener('message', messageHandler);
+
+    // Check if popup was closed manually or completed
+    const checkPopupClosed = setInterval(() => {
+      if (popup?.closed) {
+        console.log('🔵 LoginModal: Popup closed', { messageReceived, isAuthenticated });
+        cleanup();
+        // Only reset loading if we haven't received a success message and user isn't authenticated
+        if (!messageReceived && !isAuthenticated) {
+          console.warn('⚠️ LoginModal: Popup closed without receiving message');
+          setLoading(false);
+          // Don't show error if user might have just closed it manually
+        }
+      }
+    }, 500);
+
+    // Cleanup after 5 minutes (timeout)
+    setTimeout(() => {
+      if (!messageReceived) {
+        console.warn('⚠️ LoginModal: Timeout waiting for auth message');
+        cleanup();
+        if (!isAuthenticated) {
+          setError('Authentication timed out. Please try again.');
+          setLoading(false);
+        }
+      }
+    }, 5 * 60 * 1000);
   };
 
   // When the user becomes authenticated globally, close this modal.

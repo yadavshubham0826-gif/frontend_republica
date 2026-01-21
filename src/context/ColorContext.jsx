@@ -1,55 +1,61 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { usePalette } from 'color-thief-react';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import ColorThief from "colorthief";
 
 const ColorPaletteContext = createContext();
-
 export const useColorPalette = () => useContext(ColorPaletteContext);
 
 export const ColorPaletteProvider = ({ children }) => {
-  const [imageUrl, setImageUrl] = useState("https://res.cloudinary.com/dyv1rtwvh/image/upload/v1763908307/redd-francisco-gdQnsMbhkUs-unsplash_kkahq0.jpg");
-
-  const { data: colors, loading, error } = usePalette(imageUrl, 5, 'hex', {
-    crossOrigin: 'anonymous',
-    disabled: !imageUrl, // Don't run the hook until an image URL is set
-  });
-
+  const [imageUrl, setImageUrl] = useState(null);
   const [palette, setPalette] = useState({ gradient: null });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (error) {
-      console.error("ColorThief Error:", error);
-      // Set a fallback gradient if the image fails to load or process
-      setPalette({ gradient: 'linear-gradient(135deg, #e0f2fe, #a8d5e2)' });
-      return;
-    }
+    if (!imageUrl) return;
 
-    if (colors && Array.isArray(colors) && colors.length > 0) {
-      // Filter out very dark colors to ensure the gradient is vibrant.
-      const suitableColors = colors.filter(color => {
-        const hex = color.substring(1); // remove #
-        const rgb = parseInt(hex, 16);
-        const r = (rgb >> 16) & 0xff;
-        const g = (rgb >> 8) & 0xff;
-        const b = (rgb >> 0) & 0xff;
-        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b; // per ITU-R BT.709
-        return luma > 40; // Exclude very dark colors
-      });
+    setLoading(true);
 
-      let newGradient = 'linear-gradient(135deg, #e0f2fe, #a8d5e2)'; // Default fallback
-      if (suitableColors.length >= 2) {
-        newGradient = `linear-gradient(135deg, ${suitableColors.join(', ')})`;
-      } else if (suitableColors.length === 1) {
-        newGradient = `linear-gradient(135deg, ${suitableColors[0]}, #ffffff)`;
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // 🔥 REQUIRED FOR FIREBASE
+    img.src = imageUrl;
+
+    img.onload = () => {
+      try {
+        const colorThief = new ColorThief();
+        const colors = colorThief.getPalette(img, 5);
+
+        // filter dark colors
+        const suitable = colors.filter(([r, g, b]) => {
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          return luma > 40;
+        });
+
+        let gradient = "linear-gradient(135deg, #e0f2fe, #a8d5e2)";
+        if (suitable.length >= 2) {
+          gradient = `linear-gradient(135deg, ${suitable
+            .map(c => `rgb(${c.join(",")})`)
+            .join(", ")})`;
+        } else if (suitable.length === 1) {
+          gradient = `linear-gradient(135deg, rgb(${suitable[0].join(",")}), #fff)`;
+        }
+
+        setPalette({ gradient });
+      } catch (err) {
+        console.error("ColorThief failed:", err);
+        setPalette({ gradient: "linear-gradient(135deg, #e0f2fe, #a8d5e2)" });
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setPalette({ gradient: newGradient });
-    }
-  }, [colors, error]);
-
-  const value = { palette, loading, setImageUrl }; // Expose the setter function
+    img.onerror = () => {
+      console.error("Image load failed:", imageUrl);
+      setPalette({ gradient: "linear-gradient(135deg, #e0f2fe, #a8d5e2)" });
+      setLoading(false);
+    };
+  }, [imageUrl]);
 
   return (
-    <ColorPaletteContext.Provider value={value}>
+    <ColorPaletteContext.Provider value={{ palette, loading, setImageUrl }}>
       {children}
     </ColorPaletteContext.Provider>
   );

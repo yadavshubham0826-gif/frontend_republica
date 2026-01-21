@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 import '../styles/style.css'; // Reusing modal styles
 
 const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
@@ -8,9 +9,14 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
   const [photo, setPhoto] = useState(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkName, setLinkName] = useState('');
-
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const {
+    uploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
 
   const wordLimit = 500;
 
@@ -34,14 +40,6 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
     }
   };
 
-  // Helper to convert file to base64
-  const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -49,10 +47,13 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
       setError('Title and Main Content are required.');
       return;
     }
-    setLoading(true);
 
     try {
-      const photoBase64 = photo ? await toBase64(photo) : null;
+      let photoURL = null;
+      if (photo) {
+        const photoData = await uploadPhoto(photo, 'notifications/');
+        photoURL = typeof photoData === 'string' ? photoData : photoData.url;
+      }
 
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-notification`, {
         method: "POST",
@@ -61,7 +62,7 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
         body: JSON.stringify({
           title,
           content,
-          photoBase64,
+          photoURL, // Sending URL
           linkUrl,
           linkName,
         }),
@@ -77,17 +78,17 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
 
     } catch (err) {
       setError(err.message || 'An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
+
+  const isLoading = uploading;
 
   return ReactDOM.createPortal(
     <div className="modal-backdrop">
       <div className="modal-content">
         <button className="close-modal-btn" onClick={onClose}>&times;</button>
         <h2 className="modal-title">Add New Notification</h2>
-        {error && <div className="error-message">{error}</div>}
+        {(error || uploadError) && <div className="error-message">{error || uploadError.message}</div>}
         <form onSubmit={handleSubmit} className="add-blog-form">
           <div className="form-group">
             <label htmlFor="notificationTitle">Title</label>
@@ -101,6 +102,12 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
             <label htmlFor="notificationPhoto">Photo (Optional)</label>
             <input id="notificationPhoto" type="file" accept="image/*" onChange={handleFileChange} />
           </div>
+          {uploading && (
+            <div className="progress-bar-container">
+              <p>Uploading... {progress.toFixed(0)}%</p>
+              <div className="progress-bar"><div className="progress-bar-fill" style={{ width: `${progress}%` }}></div></div>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="notificationLinkUrl">Link URL (Optional)</label>
             <input id="notificationLinkUrl" type="url" placeholder="https://example.com" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} />
@@ -110,8 +117,8 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
             <input id="notificationLinkName" type="text" placeholder="e.g., Click Here for Details" value={linkName} onChange={(e) => setLinkName(e.target.value)} />
           </div>
           <div className="modal-actions">
-            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={loading}>Cancel</button>
-            <button type="submit" className="modal-button modal-primary-btn" disabled={loading}>{loading ? 'Saving...' : 'Save Notification'}</button>
+            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isLoading}>Cancel</button>
+            <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Notification'}</button>
           </div>
         </form>
       </div>

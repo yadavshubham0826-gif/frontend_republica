@@ -29,8 +29,122 @@ const connectDB = require(path.join(__dirname, 'config', 'database'));
 
 const { JSDOM } = require('jsdom'); // ✅ Import JSDOM for server-side DOM parsing
 
-// 3️⃣ Cloudinary SDK
-const cloudinary = require(path.join(__dirname, 'config', 'cloudinary'));
+// 3️⃣ Firebase Storage - Initialized after Admin SDK
+
+
+// Helper function to upload a base64 image to Firebase Storage
+// Helper function to extract path from Firebase Storage URL
+const extractPathFromFirebaseURL = (url) => {
+  if (!url) return null;
+  
+  try {
+    // Handle Firebase Storage URLs: https://firebasestorage.googleapis.com/v0/b/[bucket]/o/[encoded-path]?alt=media&token=...
+    if (url.includes('firebasestorage.googleapis.com')) {
+      const urlObj = new URL(url);
+      const pathMatch = urlObj.pathname.match(/\/o\/(.+)$/);
+      if (pathMatch && pathMatch[1]) {
+        return decodeURIComponent(pathMatch[1]);
+      }
+    }
+    
+    // Handle storage.googleapis.com URLs: https://storage.googleapis.com/[bucket]/[path]?alt=media
+    if (url.includes('storage.googleapis.com')) {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      // Remove leading slash and bucket name
+      const path = pathname.substring(1).replace(`${bucket.name}/`, '');
+      return decodeURIComponent(path);
+    }
+    
+    // If it's already a path (no http/https), return as-is
+    if (!url.startsWith('http')) {
+      return url;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error extracting path from URL:', url, error);
+    return null;
+  }
+};
+
+const uploadBase64ToFirebase = async (base64String, folder, fileName) => {
+  try {
+    const file = bucket.file(`${folder}/${fileName}`);
+    const buffer = Buffer.from(base64String.split(';base64,').pop(), 'base64');
+
+    await file.save(buffer, {
+      metadata: {
+        contentType: 'image/jpeg', // Or determine dynamically
+      },
+      public: true, // Make the file publicly readable
+    });
+
+    return `https://storage.googleapis.com/${bucket.name}/${folder}/${fileName}`;
+  } catch (error) {
+    console.error('Error uploading to Firebase Storage:', error);
+    throw error;
+  }
+};
+
+const deleteFileFromFirebase = async (path) => {
+  if (!path || typeof path !== 'string') {
+    console.warn(`⚠️  Invalid path provided for deletion: ${path}`);
+    return { success: false, path, skipped: true, reason: 'Invalid path' };
+  }
+
+  try {
+    // Normalize path: remove leading/trailing slashes, decode URL encoding
+    let normalizedPath = path.trim();
+    if (!normalizedPath) {
+      console.warn(`⚠️  Empty path provided for deletion`);
+      return { success: false, path, skipped: true, reason: 'Empty path' };
+    }
+
+    // Remove leading slash if present
+    if (normalizedPath.startsWith('/')) {
+      normalizedPath = normalizedPath.substring(1);
+    }
+
+    // Try to decode URL encoding (only if it looks encoded)
+    try {
+      if (normalizedPath.includes('%')) {
+        normalizedPath = decodeURIComponent(normalizedPath);
+      }
+    } catch (decodeError) {
+      // If decoding fails, use the path as-is
+      console.warn(`⚠️  Could not decode path (using as-is): ${normalizedPath}`);
+    }
+    
+    console.log(`🗑️  Attempting to delete Firebase Storage file: ${normalizedPath}`);
+    const file = bucket.file(normalizedPath);
+    
+    // Try to delete directly - check existence only if delete fails
+    try {
+      await file.delete();
+      console.log(`✅ Successfully deleted ${normalizedPath} from Firebase Storage.`);
+      return { success: true, path: normalizedPath };
+    } catch (deleteError) {
+      // If delete fails, check if file exists
+      if (deleteError.code === 404) {
+        console.warn(`⚠️  File not found in Firebase Storage: ${normalizedPath}. Skipping deletion.`);
+        return { success: true, path: normalizedPath, skipped: true, reason: 'File not found' };
+      }
+      // Re-throw other errors
+      throw deleteError;
+    }
+  } catch (error) {
+    if (error.code === 404) {
+      console.warn(`⚠️  File not found in Firebase Storage: ${path}. Skipping deletion.`);
+      return { success: true, path, skipped: true, reason: 'File not found' };
+    } else {
+      console.error(`❌ Error deleting file from Firebase Storage: ${path}`, error);
+      console.error(`   Error code: ${error.code}, Error message: ${error.message}`);
+      throw error; // Re-throw for Promise.allSettled to catch
+    }
+  }
+};
+
 
 // 4️⃣ Initialize Express
 const app = express();
@@ -67,12 +181,14 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'drc-political-science.firebasestorage.app',
   });
   console.log("✅ Firebase Admin SDK Initialized Successfully.");
 } else {
   console.log("Firebase Admin SDK already initialized.");
 }
 const db = getFirestore();
+const { bucket } = require(path.join(__dirname, 'config', 'firebase'));
 // ----------------------------
 // Passport configuration
 // ----------------------------
@@ -197,31 +313,44 @@ const ensureAdmin = (req, res, next) => {
 };
 
 // ----------------------------
-// Cloudinary Delete Route
+// Firebase Storage Delete Route
 // ----------------------------
-app.post('/cloudinary/delete-image', ensureAdmin, async (req, res) => { // <-- Secure this route
+app.post('/api/delete-image', ensureAdmin, async (req, res) => {
   try {
-    const { public_id } = req.body;
+    const { path, albumId, image } = req.body;
+
+    if (!path || !albumId || !image) {
+      return res.status(400).json({ error: 'path, albumId, and image object are required' });
+    }
+
+    // Delete from Firebase Storage first
+    console.log(`🗑️  Deleting image from Firebase Storage with path: ${path}`);
+    console.log(`   Album ID: ${albumId}`);
+    console.log(`   Image object:`, JSON.stringify(image, null, 2));
     
-    if (!public_id) {
-      return res.status(400).json({ error: 'public_id is required' });
+    const deleteResult = await deleteFileFromFirebase(path);
+    if (deleteResult.success) {
+      if (deleteResult.skipped) {
+        console.log(`ℹ️  File was not found, but continuing with Firestore deletion`);
+      } else {
+        console.log(`✅ Successfully deleted file from Firebase Storage: ${path}`);
+      }
     }
 
-    console.log(`Attempting to delete Cloudinary image with public_id: ${public_id}`);
+    // Remove from Firestore album
+    console.log(`Attempting to remove image from Firestore album: ${albumId}`);
+    const albumRef = db.collection('photoAlbums').doc(albumId);
+    await albumRef.update({
+      imageUrls: admin.firestore.FieldValue.arrayRemove(image)
+    });
+    
+    console.log(`✅ Successfully removed image from album ${albumId} in Firestore`);
 
-    const result = await cloudinary.uploader.destroy(public_id);
-
-    console.log('Cloudinary deletion result:', result);
-
-    if (result.result === 'not found') {
-      return res.status(404).json({ error: 'Image not found in Cloudinary' });
-    }
-
-    res.json({ success: true, message: 'Image deleted successfully.', result });
+    res.json({ success: true, message: 'Image deleted successfully from both Firebase Storage and Firestore.' });
 
   } catch (error) {
-    console.error('Cloudinary delete error details:', error);
-    res.status(500).json({ error: 'Cloudinary delete failed', details: error.message });
+    console.error('❌ Error deleting image:', error);
+    res.status(500).json({ error: 'Image deletion failed', details: error.message });
   }
 });
 
@@ -246,41 +375,95 @@ app.post('/api/delete-album', ensureAdmin, async (req, res) => { // <-- Secure t
 
     const albumData = albumDoc.data();
     const imageUrls = albumData.imageUrls || [];
-    const coverPhotoUrl = albumData.coverPhotoUrl || '';
-
-    // --- New, Robust Deletion Logic ---
-
-    // 1. Delete all images within the album's folder in Cloudinary
-    if (albumData.title) {
-      const sanitizedAlbumTitle = albumData.title.trim().replace(/\s+/g, '-').toLowerCase();
-      const folderPath = `gallery/${sanitizedAlbumTitle}`;
-      
-      console.log(`Deleting all resources in Cloudinary folder: ${folderPath}`);
-      await cloudinary.api.delete_resources_by_prefix(folderPath);
-      
-      // 2. Delete the folder itself from Cloudinary
-      await cloudinary.api.delete_folder(folderPath);
-      console.log(`Successfully deleted Cloudinary folder: ${folderPath}`);
-    } else {
-      // Fallback for older albums or if title is missing: delete images individually
-      const publicIds = imageUrls.map(image => image.public_id).filter(Boolean);
-      if (coverPhotoUrl) {
-        // Extract public_id from cover photo URL if needed (this is a basic extraction)
-        const match = coverPhotoUrl.match(/\/v\d+\/(.+)\.\w+$/);
-        if (match && match[1]) publicIds.push(match[1]);
-      }
-      if (publicIds.length > 0) {
-        await cloudinary.api.delete_resources(publicIds);
-      }
+    
+    // Handle both old (coverPhotoUrl) and new (coverPhoto) cover photo structures
+    let coverPhotoPath = '';
+    if (albumData.coverPhoto && albumData.coverPhoto.path) {
+      coverPhotoPath = albumData.coverPhoto.path;
+    } else if (albumData.coverPhotoUrl) {
+      // Extract path from old format URL using helper function
+      coverPhotoPath = extractPathFromFirebaseURL(albumData.coverPhotoUrl) || '';
     }
 
-    // 3. Delete the album document from Firestore
-    await albumRef.delete();
+    // Collect all paths to delete
+    const pathsToDelete = [];
+    
+    // 1. Add all album image paths
+    imageUrls.forEach(image => {
+      if (image.path) {
+        pathsToDelete.push(image.path);
+      }
+    });
+    
+    // 2. Add cover photo path if it exists
+    if (coverPhotoPath) {
+      pathsToDelete.push(coverPhotoPath);
+    }
+    
+    // 3. Also try to delete by album folder path (for images stored in albums/{albumId}/)
+    const albumFolderPath = `albums/${albumId}/`;
+    try {
+      const [folderFiles] = await bucket.getFiles({ prefix: albumFolderPath });
+      folderFiles.forEach(file => {
+        // Only add if not already in pathsToDelete
+        if (!pathsToDelete.includes(file.name)) {
+          pathsToDelete.push(file.name);
+        }
+      });
+    } catch (folderError) {
+      console.log(`No files found in folder ${albumFolderPath}, continuing with individual paths`);
+    }
+    
+    // 4. Delete all collected paths from Firebase Storage (handle errors gracefully)
+    if (pathsToDelete.length > 0) {
+      console.log(`🗑️  Deleting ${pathsToDelete.length} file(s) from Firebase Storage...`);
+      console.log(`   Paths to delete:`, pathsToDelete);
+      
+      const deleteResults = await Promise.allSettled(
+        pathsToDelete.map(async (path) => {
+          try {
+            console.log(`  - Attempting to delete: ${path}`);
+            const result = await deleteFileFromFirebase(path);
+            return result;
+          } catch (error) {
+            console.error(`  ❌ Error deleting ${path}:`, error);
+            throw error;
+          }
+        })
+      );
+      
+      // Count successful deletions
+      const successful = deleteResults.filter(r => r.status === 'fulfilled' && !r.value?.skipped).length;
+      const skipped = deleteResults.filter(r => r.status === 'fulfilled' && r.value?.skipped).length;
+      const failed = deleteResults.filter(r => r.status === 'rejected').length;
+      
+      console.log(`✅ Successfully deleted ${successful} file(s) from Firebase Storage`);
+      if (skipped > 0) {
+        console.log(`ℹ️  ${skipped} file(s) were not found (may have been already deleted)`);
+      }
+      if (failed > 0) {
+        console.warn(`⚠️  ${failed} file(s) encountered errors during deletion`);
+        // Log failed deletions for debugging
+        deleteResults.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            console.error(`  ❌ Failed to delete: ${pathsToDelete[index]}`, result.reason);
+          }
+        });
+      }
+    } else {
+      console.log('ℹ️  No files found to delete from Firebase Storage');
+    }
 
-    res.json({ success: true });
+    // 5. Delete the album document from Firestore (only after Storage deletion)
+    console.log(`🗑️  Deleting album document from Firestore: ${albumId}`);
+    await albumRef.delete();
+    console.log(`✅ Successfully deleted album document from Firestore`);
+
+    console.log(`✅ Successfully deleted album ${albumId} and all associated files`);
+    res.json({ success: true, message: 'Album and all associated files deleted successfully from Firebase Storage and Firestore.' });
   } catch (err) {
     console.error('Error deleting album:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 });
 
@@ -415,25 +598,24 @@ app.post('/api/create-blog', ensureAdmin, async (req, res) => {
   try {
     let processedContent = content;
 
-    const uploadedImages = []; // Array to store Cloudinary image data
+    const uploadedImages = []; // Array to store Firebase Storage image data
     // Find all base64 images in the content
     // Use JSDOM on the server instead of the browser's DOMParser
     const dom = new JSDOM(content);
     const htmlDoc = dom.window.document;
     const images = htmlDoc.querySelectorAll("img");
 
-    // Upload each base64 image to Cloudinary and replace the src
+    // Upload each base64 image to Firebase Storage and replace the src
     for (const img of images) {
       const src = img.src;
       if (src.startsWith("data:image")) {
-        console.log('Uploading new image to Cloudinary...');
-        const uploadRes = await cloudinary.uploader.upload(src, {
-          upload_preset: "DRC_WEB_IMAGES", // Make sure this preset exists
-        });
-        processedContent = processedContent.replace(src, uploadRes.secure_url);
+        console.log('Uploading new image to Firebase...');
+        const fileName = `${Date.now()}_${Math.round(Math.random() * 1E9)}.jpg`;
+        const firebaseUrl = await uploadBase64ToFirebase(src, 'drc-web-images', fileName);
+        processedContent = processedContent.replace(src, firebaseUrl);
         uploadedImages.push({
-          url: uploadRes.secure_url,
-          public_id: uploadRes.public_id,
+          url: firebaseUrl,
+          path: `drc-web-images/${fileName}`,
         });
       }
     }
@@ -488,23 +670,24 @@ app.post('/api/edit-blog', ensureAdmin, async (req, res) => {
 
     const removedImages = oldImages.filter((imgUrl) => !newImages.includes(imgUrl));
     for (const imgUrl of removedImages) {
-      const publicIdMatch = imgUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
-      const publicId = publicIdMatch ? publicIdMatch[1] : null;
-      if (publicId) {
-        console.log(`Deleting removed image: ${publicId}`);
-        await cloudinary.uploader.destroy(publicId);
-      }
+        if (imgUrl.includes('storage.googleapis.com') || imgUrl.includes('firebasestorage.googleapis.com')) {
+            const path = extractPathFromFirebaseURL(imgUrl);
+            if (path) {
+                console.log(`Deleting removed image: ${path}`);
+                await deleteFileFromFirebase(path);
+            }
+        }
     }
 
-    // --- Image Upload Logic ---
-    for (const imgSrc of newImages) {
-      if (imgSrc.startsWith("data:image")) {
-        const uploadRes = await cloudinary.uploader.upload(imgSrc, {
-          upload_preset: "DRC_WEB_IMAGES",
-        });
-        newContent = newContent.replace(imgSrc, uploadRes.secure_url);
-      }
-    }
+        const uploadPromises = newImages
+          .filter(imgSrc => imgSrc.startsWith("data:image"))
+          .map(async (imgSrc) => {
+            console.log('Uploading new image to Firebase...');
+            const fileName = `${Date.now()}_${Math.round(Math.random() * 1E9)}.jpg`;
+            const firebaseUrl = await uploadBase64ToFirebase(imgSrc, 'drc-web-images', fileName);
+            newContent = newContent.replace(imgSrc, firebaseUrl);
+          });
+        await Promise.all(uploadPromises);
 
     // --- Update Firestore Document ---
     const postRef = db.collection('blogs').doc(postId);
@@ -532,19 +715,28 @@ app.post('/api/delete-blog', ensureAdmin, async (req, res) => {
   if (!postId) return res.status(400).json({ error: 'Post ID is required.' });
 
   try {
-    // --- Delete associated images from Cloudinary ---
+    // --- Delete associated images from Firebase Storage ---
     if (content) {
       const dom = new JSDOM(content);
       const htmlDoc = dom.window.document;
       const images = [...htmlDoc.querySelectorAll("img")].map((img) => img.src);
-      const publicIds = images.map(url => {
-        const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
-        return match ? match[1] : null;
+      const paths = images.map(url => {
+        if (url.includes('storage.googleapis.com') || url.includes('firebasestorage.googleapis.com')) {
+          const path = extractPathFromFirebaseURL(url);
+          return path;
+        }
+        return null;
       }).filter(Boolean);
 
-      if (publicIds.length > 0) {
-        console.log(`Deleting ${publicIds.length} images from Cloudinary for post ${postId}`);
-        await cloudinary.api.delete_resources(publicIds);
+      if (paths.length > 0) {
+        console.log(`🗑️  Deleting ${paths.length} image(s) from Firebase Storage for blog post ${postId}`);
+        const deleteResults = await Promise.allSettled(paths.map(path => deleteFileFromFirebase(path)));
+        const successful = deleteResults.filter(r => r.status === 'fulfilled').length;
+        const failed = deleteResults.filter(r => r.status === 'rejected').length;
+        console.log(`✅ Successfully deleted ${successful} image(s) from Firebase Storage`);
+        if (failed > 0) {
+          console.warn(`⚠️  ${failed} image(s) could not be deleted`);
+        }
       }
     }
 
@@ -589,27 +781,28 @@ app.post('/api/delete-message', ensureAdmin, async (req, res) => {
 // Admin Add Flipbook Route
 // ----------------------------
 app.post('/api/add-flipbook', ensureAdmin, async (req, res) => {
-  const { publishingYear, flipbookLink, coverPhotoBase64 } = req.body;
+  const { publishingYear, flipbookLink, coverPhotoURL } = req.body;
   if (!publishingYear || !flipbookLink) {
     return res.status(400).json({ error: 'Year and link are required.' });
   }
 
   try {
     let coverPhoto = null;
-    if (coverPhotoBase64) {
-      const uploadRes = await cloudinary.uploader.upload(coverPhotoBase64, {
-        upload_preset: "DRC_JANMAT_IMAGES",
-      });
+    if (coverPhotoURL) {
+      const path = extractPathFromFirebaseURL(coverPhotoURL);
+      if (!path) {
+        console.warn(`⚠️  Could not extract path from flipbook cover photo URL: ${coverPhotoURL}`);
+      }
       coverPhoto = {
-        url: uploadRes.secure_url,
-        public_id: uploadRes.public_id,
+        url: coverPhotoURL,
+        path: path || '',
       };
     }
 
     const docRef = await db.collection('flipbooks').add({
       publishingYear,
       flipbookLink,
-      coverPhoto, // Save the entire object
+      coverPhoto, // Save the entire object or null
       createdAt: new Date(),
     });
 
@@ -625,30 +818,33 @@ app.post('/api/add-flipbook', ensureAdmin, async (req, res) => {
 // Admin Create Album / Add Photos Route
 // ----------------------------
 app.post('/api/create-album', ensureAdmin, async (req, res) => {
-  const { title, description, coverPhotoBase64 } = req.body;
-  if (!title || !description || !coverPhotoBase64) {
-    return res.status(400).json({ error: 'Title, description, and cover photo are required.' });
+  const { title, description, coverPhotoURL } = req.body;
+  if (!title || !description || !coverPhotoURL) {
+    return res.status(400).json({ error: 'Title, description, and coverPhotoURL are required.' });
   }
 
   try {
-    const sanitizedTitle = title.trim().replace(/\s+/g, '-').toLowerCase();
-    const uploadRes = await cloudinary.uploader.upload(coverPhotoBase64, {
-      upload_preset: "DRC_JANMAT_IMAGES",
-      folder: `gallery/${sanitizedTitle}`,
-    });
+    // Extract path from URL for deletion purposes later
+    const path = extractPathFromFirebaseURL(coverPhotoURL);
+    if (!path) {
+      console.warn(`⚠️  Could not extract path from cover photo URL: ${coverPhotoURL}`);
+      console.warn(`   Cover photo may not be deletable from Firebase Storage later!`);
+    } else {
+      console.log(`📷 Cover photo path: ${path}`);
+    }
 
     const docRef = await db.collection('photoAlbums').add({
       title,
       description,
       coverPhoto: {
-        url: uploadRes.secure_url,
-        public_id: uploadRes.public_id,
+        url: coverPhotoURL,
+        path: path || '',
       },
       createdAt: new Date(),
       imageUrls: [],
     });
 
-    console.log(`Admin '${req.user.email}' created album with ID: ${docRef.id}`);
+    console.log(`✅ Admin '${req.user.email}' created album with ID: ${docRef.id}`);
     res.status(201).json({ success: true, message: 'Album created successfully.' });
   } catch (error) {
     console.error('Error creating album:', error);
@@ -657,30 +853,37 @@ app.post('/api/create-album', ensureAdmin, async (req, res) => {
 });
 
 app.post('/api/add-photos-to-album', ensureAdmin, async (req, res) => {
-  const { albumId, albumTitle, photoBase64 } = req.body;
-  if (!albumId || !albumTitle || !photoBase64) {
-    return res.status(400).json({ error: 'Album ID, title, and photo data are required.' });
+  const { albumId, photoURLs } = req.body;
+  if (!albumId || !photoURLs || !Array.isArray(photoURLs)) {
+    return res.status(400).json({ error: 'Album ID and an array of photoURLs are required.' });
   }
 
   try {
-    const sanitizedTitle = albumTitle.trim().replace(/\s+/g, '-').toLowerCase();
-    const uploadRes = await cloudinary.uploader.upload(photoBase64, {
-      upload_preset: "DRC_JANMAT_IMAGES",
-      folder: `gallery/${sanitizedTitle}`,
-    });
-
     const albumRef = db.collection('photoAlbums').doc(albumId);
-    await albumRef.update({
-      imageUrls: admin.firestore.FieldValue.arrayUnion({
-        url: uploadRes.secure_url,
-        public_id: uploadRes.public_id,
-      }),
+
+    console.log(`📸 Adding ${photoURLs.length} photo(s) to album ${albumId}`);
+    const newPhotos = photoURLs.map((url, index) => {
+      const path = extractPathFromFirebaseURL(url);
+      if (!path) {
+        console.warn(`⚠️  Could not extract path from URL ${index + 1}: ${url}`);
+        console.warn(`   This photo may not be deletable from Firebase Storage later!`);
+      } else {
+        console.log(`   Photo ${index + 1}: path = ${path}`);
+      }
+      return { url, path: path || '' };
     });
 
-    res.status(200).json({ success: true, url: uploadRes.secure_url, public_id: uploadRes.public_id });
+    console.log(`💾 Storing ${newPhotos.length} photo(s) with paths:`, newPhotos.map(p => p.path));
+
+    await albumRef.update({
+      imageUrls: admin.firestore.FieldValue.arrayUnion(...newPhotos),
+    });
+
+    console.log(`✅ Successfully added ${photoURLs.length} photo(s) to album ${albumId}`);
+    res.status(200).json({ success: true, message: `${photoURLs.length} photos added successfully.` });
   } catch (error) {
-    console.error('Error adding photo to album:', error);
-    res.status(500).json({ error: 'Internal server error while adding photo.' });
+    console.error('Error adding photos to album:', error);
+    res.status(500).json({ error: 'Internal server error while adding photos.' });
   }
 });
 
@@ -688,7 +891,7 @@ app.post('/api/add-photos-to-album', ensureAdmin, async (req, res) => {
 // Admin Add Notification Route
 // ----------------------------
 app.post('/api/add-notification', ensureAdmin, async (req, res) => {
-  const { title, content, photoBase64, linkUrl, linkName } = req.body;
+  const { title, content, photoURL, linkUrl, linkName } = req.body;
 
   if (!title || !content) {
     return res.status(400).json({ error: 'Title and content are required.' });
@@ -697,18 +900,15 @@ app.post('/api/add-notification', ensureAdmin, async (req, res) => {
   try {
     let photoData = null;
 
-    // Upload photo to Cloudinary if it exists, into the 'notifications' folder
-    if (photoBase64) {
-      console.log('Uploading notification photo to Cloudinary...');
-      const uploadRes = await cloudinary.uploader.upload(photoBase64, {
-        folder: "notifications", // This ensures photos are saved in the 'notifications' folder
-        upload_preset: "DRC_WEB_IMAGES", // Using a general preset
-      });
+    if (photoURL) {
+      const path = extractPathFromFirebaseURL(photoURL);
+      if (!path) {
+        console.warn(`⚠️  Could not extract path from notification photo URL: ${photoURL}`);
+      }
       photoData = {
-        url: uploadRes.secure_url,
-        public_id: uploadRes.public_id,
+        url: photoURL,
+        path: path || '',
       };
-      console.log('Photo uploaded to Cloudinary `notifications` folder.');
     }
 
     // Prepare data for Firestore
@@ -734,18 +934,18 @@ app.post('/api/add-notification', ensureAdmin, async (req, res) => {
 // Admin Delete Notification Route
 // ----------------------------
 app.post('/api/delete-notification', ensureAdmin, async (req, res) => {
-  const { notificationId, photoPublicId } = req.body;
+  const { notificationId, photoPath } = req.body;
 
   if (!notificationId) {
     return res.status(400).json({ error: 'Notification ID is required.' });
   }
 
   try {
-    // 1. Delete photo from Cloudinary if it exists
-    if (photoPublicId) {
-      console.log(`Deleting notification photo from Cloudinary: ${photoPublicId}`);
-      await cloudinary.uploader.destroy(photoPublicId);
-      console.log('Photo deleted from Cloudinary.');
+    // 1. Delete photo from Firebase if it exists
+    if (photoPath) {
+      console.log(`Deleting notification photo from Firebase: ${photoPath}`);
+      await deleteFileFromFirebase(photoPath);
+      console.log('Photo deleted from Firebase.');
     }
 
     // 2. Delete the notification document from Firestore
@@ -763,14 +963,14 @@ app.post('/api/delete-notification', ensureAdmin, async (req, res) => {
 // Admin Delete Flipbook Route
 // ----------------------------
 app.post('/api/delete-flipbook', ensureAdmin, async (req, res) => {
-  const { flipbookId, coverPhotoPublicId } = req.body;
+  const { flipbookId, coverPhotoPath } = req.body;
   if (!flipbookId) return res.status(400).json({ error: 'Flipbook ID is required.' });
 
   try {
-    // Delete cover photo from Cloudinary if it exists
-    if (coverPhotoPublicId) {
-      console.log(`Deleting flipbook cover image: ${coverPhotoPublicId}`);
-      await cloudinary.uploader.destroy(coverPhotoPublicId);
+    // Delete cover photo from Firebase if it exists
+    if (coverPhotoPath) {
+      console.log(`Deleting flipbook cover image: ${coverPhotoPath}`);
+      await deleteFileFromFirebase(coverPhotoPath);
     }
 
     // Delete the flipbook document from Firestore
@@ -788,7 +988,7 @@ app.post('/api/delete-flipbook', ensureAdmin, async (req, res) => {
 // Admin Update Newsletter Route
 // ----------------------------
 app.post('/api/update-newsletter', ensureAdmin, async (req, res) => {
-  const { name, topic, content, previewImageBase64, oldPreviewImageUrl, isEditMode } = req.body;
+  const { name, topic, content, previewImageURL, oldPreviewImageUrl, isEditMode } = req.body;
 
   if (!name || !topic || !content) {
     return res.status(400).json({ error: 'Name, topic and content are required.' });
@@ -796,51 +996,50 @@ app.post('/api/update-newsletter', ensureAdmin, async (req, res) => {
 
   try {
     let finalContent = content;
-    // Use JSDOM on the server for content parsing
     const dom = new JSDOM();
     
-    // Process images within the content (base64 to Cloudinary)
+    // Process images pasted into the content (base64 to Firebase)
     const htmlDoc = dom.window.document.createRange().createContextualFragment(content);
     const images = htmlDoc.querySelectorAll("img");
     for (const img of images) {
       const src = img.src;
       if (src.startsWith("data:image")) {
-        const uploadRes = await cloudinary.uploader.upload(src, {
-          upload_preset: "DRC_JANMAT_IMAGES",
-        });
-        finalContent = finalContent.replace(src, uploadRes.secure_url);
+        console.log('Uploading new image to Firebase...');
+        const fileName = `${Date.now()}_${Math.round(Math.random() * 1E9)}.jpg`;
+        const firebaseUrl = await uploadBase64ToFirebase(src, 'drc-janmat-images', fileName);
+        finalContent = finalContent.replace(src, firebaseUrl);
       }
     }
 
-    let previewImageUrl = oldPreviewImageUrl || '';
+    let finalPreviewImageUrl = oldPreviewImageUrl || '';
 
-    if (previewImageBase64) {
-      // If a new preview image is provided, delete the old one if it exists
+    // If a new preview image URL is provided, it means a new image was uploaded on the client.
+    if (previewImageURL) {
+      // Delete the old one if it exists
       if (oldPreviewImageUrl) {
-        const publicId = oldPreviewImageUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
-        if (publicId && publicId[1]) {
-          await cloudinary.uploader.destroy(publicId[1]);
+        const path = extractPathFromFirebaseURL(oldPreviewImageUrl);
+        if (path) {
+            console.log(`Deleting old newsletter preview image: ${path}`);
+            await deleteFileFromFirebase(path);
         }
       }
-      // Upload the new preview image
-      const uploadRes = await cloudinary.uploader.upload(previewImageBase64, {
-        upload_preset: "DRC_JANMAT_IMAGES",
-      });
-      previewImageUrl = uploadRes.secure_url;
+      // The new URL is the one from the client
+      finalPreviewImageUrl = previewImageURL;
     }
 
     const newsletterRef = db.collection('latestNewsletter').doc('current');
     await newsletterRef.set({
-      name: name, // Use the name from the request
+      name: name,
       topic,
-      previewImageUrl,
+      previewImageUrl: finalPreviewImageUrl,
       content: finalContent,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     console.log(`Admin '${req.user.email}' updated latest newsletter.`);
     res.status(200).json({ success: true, message: 'Newsletter updated successfully.' });
-  } catch (error) {
+  } catch (error)
+ {
     console.error('Error updating newsletter:', error);
     res.status(500).json({ error: 'Internal server error while updating newsletter.' });
   }
@@ -853,14 +1052,13 @@ app.post('/api/delete-newsletter', ensureAdmin, async (req, res) => {
   const { previewImageUrl } = req.body;
 
   try {
-    // Delete preview image from Cloudinary if it exists
+    // Delete preview image from Firebase if it exists
     if (previewImageUrl) {
-      const publicIdMatch = previewImageUrl.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z]+$/);
-      const publicId = publicIdMatch ? publicIdMatch[1] : null;
-      if (publicId) {
-        console.log(`Deleting newsletter cover image: ${publicId}`);
-        await cloudinary.uploader.destroy(publicId);
-      }
+        const path = extractPathFromFirebaseURL(previewImageUrl);
+        if (path) {
+            console.log(`Deleting newsletter cover image: ${path}`);
+            await deleteFileFromFirebase(path);
+        }
     }
 
     // Delete the newsletter document from Firestore

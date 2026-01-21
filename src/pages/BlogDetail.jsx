@@ -7,6 +7,7 @@ import DOMPurify from 'dompurify'; // Import the sanitizer
 import Notification from '../components/Notification';
 import { db } from "../firebase-config.js"; // Import Firestore instance
 import { collection, query, where, getDocs, doc, updateDoc, increment, orderBy } from "firebase/firestore"; // Import Firestore functions
+import { formatDate } from '../utils/dateFormatter'; // Import the date formatter utility
 import "../styles/BlogDetail.css";
 
 const BlogDetail = () => {
@@ -308,7 +309,7 @@ const BlogDetail = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <Link to="/blog" className="back-link" style={{ flex: 1 }}>← Back to Blog</Link>
           <img
-            src="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1763817711/WhatsApp_Image_2025-11-22_at_18.42.47_fa6778ca_nqifs2.jpg"
+            src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FMain%20Page%2Frepublica_logo.jpg?alt=media&token=5400e619-c51a-48f6-8240-9f88b15ac83d"
             alt="Republica Logo"
             style={{
               width: '60px',
@@ -322,8 +323,7 @@ const BlogDetail = () => {
 
         <h1 className="blog-title">{post.title}</h1>
         <p className="blog-meta">
-          By {post.author} on{" "}
-          {post.date ? new Date(post.date._seconds ? post.date._seconds * 1000 : post.date).toLocaleDateString() : "..."}
+          By {post.author} on {formatDate(post.date)}
         </p>
         <hr />
 
@@ -403,17 +403,7 @@ const BlogDetail = () => {
                       <strong>{comment.author}</strong>
                       <p>{comment.text}</p>
                       <div className="comment-footer">
-                        <span>
-  {comment.createdAt
-    ? comment.createdAt.toDate // Firestore Timestamp object
-      ? comment.createdAt.toDate().toLocaleString()
-      : comment.createdAt._seconds // Firestore Timestamp from client SDK
-        ? new Date(comment.createdAt._seconds * 1000).toLocaleString()
-        : comment.createdAt.seconds // Admin SDK timestamp
-          ? new Date(comment.createdAt.seconds * 1000).toLocaleString()
-          : new Date(comment.createdAt).toLocaleString() // fallback for JS Date
-    : "Just now"}
-</span>
+                        <span>{formatDate(comment.createdAt)}</span>
 
                         <div className="comment-actions">
                           <button

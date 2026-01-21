@@ -1,54 +1,59 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 import '../styles/AddPhotosModal.css';
 
 const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => {
   // State for the overall modal
   const [error, setError] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State for 'add photos' view
   const [selectedAlbum, setSelectedAlbum] = useState(null);
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
-  const [uploadProgress, setUploadProgress] = useState({});
 
   // State for 'create' view
   const [newAlbumTitle, setNewAlbumTitle] = useState('');
-  const [newAlbumDescription, setNewAlbumDescription] = useState(''); // New state for album description
+  const [newAlbumDescription, setNewAlbumDescription] = useState('');
   const [coverPhoto, setCoverPhoto] = useState(null);
   const [coverPreview, setCoverPreview] = useState(null);
 
-  // Fetch albums and set initial state when the modal opens
+  const {
+    uploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
+
+  // Reset states when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Reset all states when modal opens
       setError('');
       setFiles([]);
       setPreviews([]);
       setNewAlbumTitle('');
-      setNewAlbumDescription(''); // Reset description
+      setNewAlbumDescription('');
       setCoverPhoto(null);
       setCoverPreview(null);
-      setIsProcessing(false);
+      setIsSubmitting(false);
 
-      // If the modal is opened to add photos to an existing album
       if (initialAlbum) {
         setSelectedAlbum(initialAlbum);
       }
     }
   }, [isOpen, initialAlbum]);
 
-  // Effect for multi-file previews
+  // Create/revoke object URLs for previews
   useEffect(() => {
     const newPreviews = files.map(file => ({
-      ...file, preview: URL.createObjectURL(file)
+      ...file,
+      preview: URL.createObjectURL(file),
     }));
     setPreviews(newPreviews);
     return () => newPreviews.forEach(file => URL.revokeObjectURL(file.preview));
   }, [files]);
 
-  // Effect for single cover photo preview
   useEffect(() => {
     if (coverPhoto) {
       const url = URL.createObjectURL(coverPhoto);
@@ -57,6 +62,7 @@ const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => 
     }
   }, [coverPhoto]);
 
+  // Dropzone callbacks
   const onAddPhotosDrop = useCallback(acceptedFiles => {
     setFiles(prev => [...prev, ...acceptedFiles.map(file => Object.assign(file, { id: Math.random().toString(36).substring(2, 9) }))]);
     setError('');
@@ -68,113 +74,169 @@ const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => 
 
   const { getRootProps: addPhotosProps, getInputProps: addPhotosInputProps, isDragActive: addPhotosActive } = useDropzone({
     onDrop: onAddPhotosDrop,
-    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif'] }
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif'] },
   });
 
   const { getRootProps: createCoverProps, getInputProps: createCoverInputProps, isDragActive: createCoverActive } = useDropzone({
     onDrop: onCreateCoverDrop,
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif'] },
-    maxFiles: 1
+    maxFiles: 1,
   });
 
   const handleDescriptionChange = (e) => {
-    const text = e.target.value;    
-    if (text.length > 250) {
-      // If the limit is exceeded, truncate the text to 250 characters
-      setNewAlbumDescription(text.slice(0, 250));
-    } else {
-      setNewAlbumDescription(text);
-    }
+    const text = e.target.value;
+    setNewAlbumDescription(text.slice(0, 250));
   };
 
   const handleUpload = async () => {
     if (files.length === 0) return setError('Please select at least one photo.');
     if (!selectedAlbum) return setError('No album selected for upload.');
 
-    setIsProcessing(true);
+    // Check if API URL is configured (define outside try block for error handling)
+    const apiUrl = import.meta.env.VITE_API_BASE_URL;
+    if (!apiUrl) {
+      setError('API server URL is not configured. Please check your environment variables.');
+      return;
+    }
+
+    setIsSubmitting(true);
     setError('');
 
     try {
-      for (const file of files) {
-        const photoBase64 = await toBase64(file);
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-photos-to-album`, {
-          method: 'POST',
-          credentials: 'include', // <-- ADD THIS LINE
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            albumId: selectedAlbum.id,
-            albumTitle: selectedAlbum.title,
-            photoBase64,
-          }),
-        });
+      // Upload all files in parallel and get their URLs and paths
+      const photoData = await Promise.all(
+        files.map(file => uploadPhoto(file, `albums/${selectedAlbum.id}/`))
+      );
 
-        const result = await response.json();
-        if (!response.ok) {
-          // Stop on first error
-          throw new Error(result.error || `Failed to upload ${file.name}.`);
-        }
+      // Extract URLs from the response (handle both old format string and new format object)
+      const photoURLs = photoData.map(data => typeof data === 'string' ? data : data.url);
+
+      // Send the URLs to the backend
+      const response = await fetch(`${apiUrl}/api/add-photos-to-album`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          albumId: selectedAlbum.id,
+          photoURLs, // Send array of URLs
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+        throw new Error(errorData.error || 'Failed to add photos to album.');
       }
-      
+
+      const result = await response.json();
+
       if (onUploadComplete) onUploadComplete();
       onClose();
     } catch (err) {
       console.error("Error uploading photos:", err);
-      setError(err.message || 'Failed to upload photos.');
+      
+      // Provide user-friendly error messages for different scenarios
+      let errorMessage = 'Failed to upload photos. ';
+      
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        // Network error - could be connection refused, CORS, or network timeout
+        const isLocalhost = apiUrl && apiUrl.includes('localhost');
+        if (isLocalhost) {
+          errorMessage += 'Cannot connect to the local server. Please make sure the backend server is running on ' + apiUrl;
+        } else {
+          errorMessage += 'Cannot connect to the server. Please check your internet connection and try again.';
+        }
+      } else if (err.message.includes('ERR_CONNECTION_REFUSED')) {
+        errorMessage += 'Connection refused. The server may be down or not accessible.';
+      } else if (err.message.includes('API server URL')) {
+        errorMessage += err.message;
+      } else {
+        errorMessage += err.message || 'An unexpected error occurred. Please try again.';
+      }
+      
+      setError(errorMessage);
     } finally {
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleCreateAlbum = async () => {
     if (!newAlbumTitle.trim()) return setError('Album title is required.');
-    if (!newAlbumDescription.trim()) return setError('Album description is required.'); // Validate description
+    if (!newAlbumDescription.trim()) return setError('Album description is required.');
     if (!coverPhoto) return setError('A cover photo is required.');
-    setIsProcessing(true); setError('');
-    try {
-      const coverPhotoBase64 = await toBase64(coverPhoto);
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/create-album`, {
+    // Check if API URL is configured (define outside try block for error handling)
+    const apiUrl = import.meta.env.VITE_API_BASE_URL;
+    if (!apiUrl) {
+      setError('API server URL is not configured. Please check your environment variables.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      // Upload cover photo and get URL (handle both old format string and new format object)
+      const coverPhotoData = await uploadPhoto(coverPhoto, 'album_covers/');
+      const coverPhotoURL = typeof coverPhotoData === 'string' ? coverPhotoData : coverPhotoData.url;
+
+      // Send the URL to the backend
+      const response = await fetch(`${apiUrl}/api/create-album`, {
         method: 'POST',
-        credentials: 'include', // <-- ADD THIS LINE
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: newAlbumTitle,
           description: newAlbumDescription,
-          coverPhotoBase64,
+          coverPhotoURL, // Send URL instead of base64
         }),
       });
 
-      const result = await response.json();
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to create album.');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown server error' }));
+        throw new Error(errorData.error || 'Failed to create album.');
       }
 
+      const result = await response.json();
+      
       if (onUploadComplete) onUploadComplete();
       onClose();
     } catch (err) {
       console.error("Error creating album:", err);
-      setError(err.message || 'Failed to create album.');
+      
+      // Provide user-friendly error messages for different scenarios
+      let errorMessage = 'Failed to create album. ';
+      
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        // Network error - could be connection refused, CORS, or network timeout
+        const isLocalhost = apiUrl && apiUrl.includes('localhost');
+        if (isLocalhost) {
+          errorMessage += 'Cannot connect to the local server. Please make sure the backend server is running on ' + apiUrl;
+        } else {
+          errorMessage += 'Cannot connect to the server. Please check your internet connection and try again.';
+        }
+      } else if (err.message.includes('ERR_CONNECTION_REFUSED')) {
+        errorMessage += 'Connection refused. The server may be down or not accessible.';
+      } else if (err.message.includes('API server URL')) {
+        errorMessage += err.message;
+      } else {
+        errorMessage += err.message || 'An unexpected error occurred. Please try again.';
+      }
+      
+      setError(errorMessage);
     } finally {
-      setIsProcessing(false);
+      setIsSubmitting(false);
     }
   };
 
-  // Helper to convert file to base64
-  const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
-
   if (!isOpen) return null;
+
+  const isOperationInProgress = uploading || isSubmitting;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content add-photos-modal" onClick={e => e.stopPropagation()}>
         <button className="close-modal-btn" onClick={onClose}>&times;</button>
-        
-        {/* If initialAlbum is passed, show the 'Add Photos' UI */}
+
         {initialAlbum ? (
           <>
             <h2>Add Photos to "{initialAlbum.title}"</h2>
@@ -192,14 +254,21 @@ const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => 
                 ))}
               </div>
             )}
+            {uploading && (
+                <div className="progress-bar-container">
+                    <p>Uploading... {progress.toFixed(0)}%</p>
+                    <div className="progress-bar">
+                        <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+                    </div>
+                </div>
+            )}
             <div className="modal-actions">
-              <button className="modal-button modal-primary-btn" onClick={handleUpload} disabled={isProcessing || files.length === 0}>
-                {isProcessing ? <><span className="spinner"></span> Uploading...</> : 'Upload Photos'}
+              <button className="modal-button modal-primary-btn" onClick={handleUpload} disabled={isOperationInProgress || files.length === 0}>
+                {isOperationInProgress ? <><span className="spinner"></span> {uploading ? 'Uploading...' : 'Saving...'}</> : 'Upload Photos'}
               </button>
             </div>
           </>
         ) : (
-          // Otherwise, show the 'Create New Album' UI
           <>
             <h2>Create New Album</h2>
             <div className="form-group"><label htmlFor="albumTitle">Album Title</label><input type="text" id="albumTitle" value={newAlbumTitle} onChange={(e) => setNewAlbumTitle(e.target.value)} placeholder="e.g., Fresher's Party 2025" required /></div>
@@ -214,15 +283,24 @@ const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => 
                 {coverPreview ? <img src={coverPreview} alt="Cover preview" style={{ maxHeight: '150px', borderRadius: '8px', objectFit: 'contain' }} /> : <p>Drag & drop a cover photo here</p>}
               </div>
             </div>
+             {uploading && (
+                <div className="progress-bar-container">
+                    <p>Uploading cover photo... {progress.toFixed(0)}%</p>
+                    <div className="progress-bar">
+                        <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+                    </div>
+                </div>
+            )}
             <div className="modal-actions">
-              <button className="modal-button modal-primary-btn" onClick={handleCreateAlbum} disabled={isProcessing || !newAlbumTitle || !coverPhoto}>
-                {isProcessing ? <><span className="spinner"></span> Creating...</> : 'Create Album'}
+              <button className="modal-button modal-primary-btn" onClick={handleCreateAlbum} disabled={isOperationInProgress || !newAlbumTitle || !coverPhoto}>
+                {isOperationInProgress ? <><span className="spinner"></span> {uploading ? 'Uploading...' : 'Creating...'}</> : 'Create Album'}
               </button>
             </div>
           </>
         )}
 
         {error && <p className="error-message">{error}</p>}
+        {uploadError && <p className="error-message">{uploadError.message}</p>}
       </div>
     </div>
   );

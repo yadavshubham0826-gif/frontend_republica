@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 import '../styles/style.css'; // Reusing modal styles
-
-const CLOUDINARY_CLOUD_NAME = "dyv1rtwvh";
-const CLOUDINARY_UPLOAD_PRESET = "DRC_JANMAT_IMAGES";
 
 const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
   const [publishingYear, setPublishingYear] = useState('');
   const [flipbookLink, setFlipbookLink] = useState('');
   const [coverPhoto, setCoverPhoto] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const {
+    uploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
 
   if (!isOpen) return null;
 
@@ -27,21 +31,23 @@ const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
       setError('Publishing Year and Flipbook Link are required.');
       return;
     }
-    setLoading(true);
 
     try {
-      // Convert file to base64 to send as JSON
-      const coverPhotoBase64 = coverPhoto ? await toBase64(coverPhoto) : null;
+      let coverPhotoURL = null;
+      if (coverPhoto) {
+        const coverPhotoData = await uploadPhoto(coverPhoto, 'flipbook_covers/');
+        coverPhotoURL = typeof coverPhotoData === 'string' ? coverPhotoData : coverPhotoData.url;
+      }
 
       // Call the new secure backend endpoint
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-flipbook`, {
         method: "POST",
-        credentials: 'include', // <-- ADD THIS LINE
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           publishingYear,
           flipbookLink,
-          coverPhotoBase64,
+          coverPhotoURL, // Sending URL now
         }),
       });
 
@@ -60,25 +66,17 @@ const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
     } catch (err) {
       console.error('Error adding flipbook:', err);
       setError(err.message || 'Failed to add flipbook. Please try again.');
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Helper to convert file to base64
-  const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-  });
+  const isLoading = uploading;
 
   return ReactDOM.createPortal(
     <div className="modal-backdrop">
       <div className="modal-content">
         <button className="close-modal-btn" onClick={onClose}>&times;</button>
         <h2 className="modal-title">Add New Flipbook</h2>
-        {error && <div className="error-message">{error}</div>}
+        {(error || uploadError) && <div className="error-message">{error || uploadError.message}</div>}
         <form onSubmit={handleSubmit} className="add-blog-form">
           <div className="form-group">
             <label htmlFor="publishingYear">Publishing Year</label>
@@ -92,9 +90,17 @@ const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
             <label htmlFor="coverPhoto">Cover Photo</label>
             <input id="coverPhoto" type="file" accept="image/*" onChange={handleFileChange} />
           </div>
+          {uploading && (
+            <div className="progress-bar-container">
+              <p>Uploading... {progress.toFixed(0)}%</p>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
           <div className="confirm-modal-actions">
-            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={loading}>Cancel</button>
-            <button type="submit" className="modal-button modal-primary-btn" disabled={loading}>{loading ? 'Saving...' : 'Save Flipbook'}</button>
+            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isLoading}>Cancel</button>
+            <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Flipbook'}</button>
           </div>
         </form>
       </div>

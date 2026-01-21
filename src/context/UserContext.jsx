@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
+import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
+import { auth } from '../firebase-config';
 
 // Create UserContext
 export const UserContext = createContext(null);
@@ -51,8 +53,19 @@ export const UserProvider = ({ children }) => {
   const authCheckRan = useRef(false); // StrictMode protection
 
   // Login
-  const login = (userData) => {
+  const login = async (userData) => {
     if (!userData) return;
+
+    // If customToken exists, sign in to Firebase Auth
+    if (userData.customToken) {
+      try {
+        await signInWithCustomToken(auth, userData.customToken);
+        console.log('✅ Successfully signed in to Firebase Auth');
+      } catch (error) {
+        console.error('❌ Error signing in to Firebase Auth:', error);
+        // Continue with login even if Firebase Auth fails (for backward compatibility)
+      }
+    }
 
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
@@ -65,6 +78,15 @@ export const UserProvider = ({ children }) => {
   // Logout
   const logout = async () => {
     try {
+      // Sign out from Firebase Auth
+      try {
+        await firebaseSignOut(auth);
+        console.log('✅ Successfully signed out from Firebase Auth');
+      } catch (error) {
+        console.error('❌ Error signing out from Firebase Auth:', error);
+      }
+
+      // Sign out from backend session
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
         method: 'GET',
         credentials: 'include',
@@ -86,6 +108,18 @@ export const UserProvider = ({ children }) => {
   // ⚡ FAST AUTH LOAD — no backend request on page load
   useEffect(() => {
     // User from localStorage already loaded
+    // If user exists and has customToken, sign in to Firebase Auth
+    if (initialUser?.customToken) {
+      signInWithCustomToken(auth, initialUser.customToken)
+        .then(() => {
+          console.log('✅ Re-authenticated with Firebase Auth on page load');
+        })
+        .catch((error) => {
+          console.error('❌ Error re-authenticating with Firebase Auth:', error);
+          // If token is expired or invalid, try to get a new one from backend
+          // For now, just continue - user can still use backend session
+        });
+    }
     setLoading(false);
   }, []);
 

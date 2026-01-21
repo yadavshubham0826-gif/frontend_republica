@@ -24,6 +24,7 @@ const Gallery = () => {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState('success'); // 'success' or 'error'
   const [showNotification, setShowNotification] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { palette, loading } = useColorPalette();
   const { gradient } = palette; // shared gradient from context
@@ -85,6 +86,7 @@ const Gallery = () => {
   const handleConfirmDelete = async () => {
     if (!albumToDelete || !user) return;
 
+    setIsDeleting(true);
     try {
       // Call your server API instead of Firebase Function
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-album`, {
@@ -117,6 +119,7 @@ const Gallery = () => {
       setNotificationType('error');
       setShowNotification(true);
     } finally {
+      setIsDeleting(false);
       setIsDeleteModalOpen(false);
       setAlbumToDelete(null);
     }
@@ -184,6 +187,8 @@ const Gallery = () => {
         onConfirm={handleConfirmDelete}
         title="Confirm Album Deletion"
         confirmText="Delete"
+        loading={isDeleting}
+        loadingText="Deleting album and all photos..."
       >
         <p>Are you sure you want to permanently delete the album "<strong>{albumToDelete?.title}</strong>"?</p>
         <p>This will delete the album and all of its photos. This action cannot be undone.</p>

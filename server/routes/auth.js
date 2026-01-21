@@ -8,6 +8,23 @@ const User = require('../models/User'); // ✅ Import the Mongoose User model
 module.exports = function(db) {
   const router = express.Router();
 
+  // Helper function to sync user to Firestore for Storage rules
+  const syncUserToFirestore = async (userId, userData) => {
+    try {
+      const userRef = db.collection('users').doc(userId);
+      await userRef.set({
+        name: userData.name,
+        email: userData.email,
+        role: userData.role || 'user',
+        authMethod: userData.authMethod || 'email',
+      }, { merge: true }); // merge: true ensures we don't overwrite existing data
+      console.log(`✅ Synced user ${userId} to Firestore`);
+    } catch (error) {
+      console.error(`❌ Error syncing user ${userId} to Firestore:`, error);
+      // Don't throw - this is not critical for login flow
+    }
+  };
+
   // === GOOGLE OAUTH ROUTES ===
 
   // Google Auth Routes
@@ -24,16 +41,35 @@ module.exports = function(db) {
   });
 
   // Route to handle login success
-  router.get('/login-success', (req, res) => {
+  router.get('/login-success', async (req, res) => {
     if (req.user) {
-      const userData = {
-        id: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-      };
-      // Redirect to a frontend URL with user data as query parameters
-      res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
+      try {
+        const userId = req.user.id || req.user._id.toString();
+        // Sync user to Firestore for Storage rules
+        await syncUserToFirestore(userId, {
+          name: req.user.name,
+          email: req.user.email,
+          role: req.user.role,
+          authMethod: req.user.authMethod,
+        });
+        
+        // Create a custom token for Firebase client-side auth
+        const customToken = await admin.auth().createCustomToken(userId);
+        const userData = {
+          id: req.user.id,
+          name: req.user.name,
+          email: req.user.email,
+          role: req.user.role,
+          customToken, // Add token to user data
+        };
+        // Redirect to a frontend URL with user data as query parameters
+        res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
+      } catch (tokenError) {
+        console.error("Error creating custom token for Google user:", tokenError);
+        // Fallback: redirect without the token if creation fails
+        const userData = { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role };
+        res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
+      }
     } else {
       res.status(401).send('User not authenticated');
     }
@@ -214,13 +250,32 @@ module.exports = function(db) {
       await newUser.save();
 
       // ✅ Log the user in
-      req.login(newUser, (err) => {
+      req.login(newUser, async (err) => {
         if (err) return next(err);
-        res.status(201).json({
-          success: true,
-          message: 'Account created successfully.',
-          user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role },
-        });
+        try {
+          const userId = newUser._id.toString();
+          // Sync user to Firestore for Storage rules
+          await syncUserToFirestore(userId, {
+            name: newUser.name,
+            email: newUser.email,
+            role: newUser.role,
+            authMethod: newUser.authMethod,
+          });
+          
+          const customToken = await admin.auth().createCustomToken(userId);
+          res.status(201).json({
+            success: true,
+            message: 'Account created successfully.',
+            user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role, customToken },
+          });
+        } catch (tokenError) {
+          console.error("Error creating custom token during signup:", tokenError);
+          res.status(201).json({
+            success: true,
+            message: 'Account created successfully.',
+            user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role },
+          });
+        }
       });
     } catch (error) {
       console.error('Error during email signup:', error);
@@ -251,12 +306,27 @@ module.exports = function(db) {
         const isMatch = await bcrypt.compare(password, user.password);
         if (isMatch) {
           // Passwords match! Log the user in.
-          req.login(user, (err) => {
+          req.login(user, async (err) => {
             if (err) return next(err);
-            return res.status(200).json({
-              success: true,
-              user: { id: user.id, name: user.name, email: user.email, role: user.role },
-            });
+            try {
+              const userId = user.id || user._id.toString();
+              // Sync user to Firestore for Storage rules
+              await syncUserToFirestore(userId, {
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                authMethod: user.authMethod,
+              });
+              
+              const customToken = await admin.auth().createCustomToken(userId);
+              return res.status(200).json({
+                success: true,
+                user: { id: user.id, name: user.name, email: user.email, role: user.role, customToken },
+              });
+            } catch (tokenError) {
+              console.error("Error creating custom token:", tokenError);
+              return res.status(500).json({ error: "Error preparing user session." });
+            }
           });
         } else {
           // Password exists, but it's incorrect.

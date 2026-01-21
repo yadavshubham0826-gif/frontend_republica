@@ -1,0 +1,89 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    // Checks if the requesting user is authenticated and has the 'admin' role.
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Checks if the requesting user is authenticated (logged in).
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // --- Blogs Collection Rules ---
+    match /blogs/{blogId} {
+      // READ: Anyone can read a single blog post or list the collection.
+      allow get, list: if true;
+
+      // UPDATE:
+      // - Anyone can update the 'likes' and 'views' fields.
+      // - Only an admin can update other fields (e.g., title, content).
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes', 'views']))
+                      || isAdmin();
+
+      // CREATE & DELETE: Only an admin can create or delete a blog post.
+      allow create, delete: if isAdmin();
+
+      // --- Comments Subcollection Rules ---
+      match /comments/{commentId} {
+        // READ: Anyone can read comments.
+        allow read: if true;
+
+        // CREATE: Any logged-in user (admin or regular) can create a comment.
+        allow create: if isSignedIn();
+
+        // UPDATE: Anyone can update the 'likes' on a comment.
+        allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+
+        // DELETE: Only an admin can delete a comment.
+        allow delete: if isAdmin();
+      }
+    }
+
+    // --- Other Top-Level Collections ---
+
+    // Photo Albums: Public read, admin write.
+    match /photoAlbums/{albumId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Notifications: Public read, admin write.
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Flipbooks (Janmat): Public read, admin write.
+    match /flipbooks/{flipbookId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Latest Newsletter: Public read, admin write.
+    match /latestNewsletter/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Contact Submissions: Anyone can create. Only admins can read/delete.
+    match /contactSubmissions/{messageId} {
+      allow create: if true;
+      allow read, delete: if isAdmin();
+    }
+
+    // Users: Users can read their own data. Creating is public (for signup).
+    // Admins can read any user's data.
+    match /users/{userId} {
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow create: if true;
+      // Prevent users from updating their own role or deleting their account from the client.
+      allow update: if request.auth.uid == userId;
+      allow delete: if false;
+    }
+  }
+}

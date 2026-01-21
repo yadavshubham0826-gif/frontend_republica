@@ -29,6 +29,7 @@ const Blog = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
   const [currentPost, setCurrentPost] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [likedPosts, setLikedPosts] = useState(new Set()); // Track liked posts in this session
 
   const { user } = useUser();
@@ -147,6 +148,7 @@ const Blog = () => {
   const handleDeletePost = async () => {
     if (!postToDelete) return;
 
+    setIsDeleting(true);
     try {
       // Call the new secure backend endpoint
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-blog`, {
@@ -171,6 +173,7 @@ const Blog = () => {
       console.error("Error deleting post:", err);
       setError("Failed to delete post. Please try again.");
     } finally {
+      setIsDeleting(false);
       setIsDeleteConfirmOpen(false);
     }
   };
@@ -320,6 +323,9 @@ const Blog = () => {
           onClose={() => setIsDeleteConfirmOpen(false)}
           onConfirm={handleDeletePost}
           title="Confirm Deletion"
+          confirmText="Delete"
+          loading={isDeleting}
+          loadingText="Deleting blog post..."
         >
           <p>
             Are you sure you want to delete the post titled "

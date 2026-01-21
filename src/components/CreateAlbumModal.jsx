@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import heic2any from 'heic2any'; // Import the conversion library
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 
 const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
   const [title, setTitle] = useState('');
@@ -9,6 +10,13 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
   const [coverPreview, setCoverPreview] = useState(null); // State for the image preview URL
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
+
+  const {
+    uploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
 
   const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length > 0) {
@@ -81,24 +89,25 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
     setError('');
 
     try {
-      // Convert cover photo file to base64 to send to backend
-      const toBase64 = file => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-      });
-      const coverPhotoBase64 = await toBase64(coverPhoto);
+      // Upload cover photo to Firebase Storage first (handle both old format string and new format object)
+      const coverPhotoData = await uploadPhoto(coverPhoto, 'album_covers/');
+      const coverPhotoURL = typeof coverPhotoData === 'string' ? coverPhotoData : coverPhotoData.url;
 
-      // Call the secure backend API
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/create-album`, {
+      // Check if API URL is configured
+      const apiUrl = import.meta.env.VITE_API_BASE_URL;
+      if (!apiUrl) {
+        throw new Error('API server URL is not configured. Please check your environment variables.');
+      }
+
+      // Call the secure backend API with Firebase Storage URL
+      const response = await fetch(`${apiUrl}/api/create-album`, {
         method: 'POST',
-        credentials: 'include', // <-- ADD THIS LINE
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title,
-          description: description, // ✅ Send description
-          coverPhotoBase64: coverPhotoBase64,
+          description: description,
+          coverPhotoURL: coverPhotoURL, // Send Firebase Storage URL instead of base64
         }),
       });
 
@@ -113,7 +122,20 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
       onClose(); // Close the modal on success
     } catch (err) {
       console.error("Error creating album:", err);
-      setError(err.message || 'Failed to create album. Please try again.');
+      let errorMessage = err.message || 'Failed to create album. Please try again.';
+      
+      // Provide user-friendly error messages
+      if (err.message.includes('Failed to fetch') || err.message.includes('ERR_CONNECTION_REFUSED')) {
+        const apiUrl = import.meta.env.VITE_API_BASE_URL;
+        const isLocalhost = apiUrl && apiUrl.includes('localhost');
+        if (isLocalhost) {
+          errorMessage = 'Cannot connect to the local server. Please make sure the backend server is running on ' + apiUrl;
+        } else {
+          errorMessage = 'Cannot connect to the server. Please check your internet connection and try again.';
+        }
+      }
+      
+      setError(errorMessage);
       setIsCreating(false);
     }
   };
@@ -173,14 +195,24 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
             </div>
           </div>
 
+          {uploading && (
+            <div className="progress-bar-container">
+              <p>Uploading cover photo... {progress.toFixed(0)}%</p>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
+
           {error && <p className="error-message">{error}</p>}
+          {uploadError && <p className="error-message">{uploadError.message}</p>}
 
           <div className="modal-actions">
-            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isCreating}>
+            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isCreating || uploading}>
               Cancel
             </button>
-            <button type="submit" className="modal-button modal-primary-btn" disabled={isCreating}>
-              {isCreating ? <><span className="spinner"></span> Creating...</> : 'Create Album'}
+            <button type="submit" className="modal-button modal-primary-btn" disabled={isCreating || uploading || !title || !coverPhoto || !description}>
+              {isCreating || uploading ? <><span className="spinner"></span> {uploading ? 'Uploading...' : 'Creating...'}</> : 'Create Album'}
             </button>
           </div>
         </form>

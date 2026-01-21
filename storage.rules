@@ -1,0 +1,40 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is admin by checking Firestore
+    function isAdmin() {
+      return request.auth != null && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Album covers: Only admins can write
+    match /album_covers/{imageId} {
+      allow read: if true; // Anyone can read
+      allow write: if isAdmin(); // Only admins can upload/delete
+    }
+    
+    // Album photos: Only admins can write
+    match /albums/{albumId}/{imageId} {
+      allow read: if true; // Anyone can read
+      allow write: if isAdmin(); // Only admins can upload/delete
+    }
+    
+    // DRC web images (for blog posts): Only admins can write
+    match /drc-web-images/{imageId} {
+      allow read: if true; // Anyone can read
+      allow write: if isAdmin(); // Only admins can upload/delete
+    }
+    
+    // Default: Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

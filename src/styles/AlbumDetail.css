@@ -8,6 +8,30 @@
 
 .gallery-item-wrapper {
   perspective: 1000px;
+  position: relative;
+}
+
+.delete-photo-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.gallery-item-wrapper:hover .delete-photo-btn {
+  opacity: 1;
 }
 
 .gallery-item {

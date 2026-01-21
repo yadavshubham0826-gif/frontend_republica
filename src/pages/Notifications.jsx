@@ -65,7 +65,7 @@ function Notifications() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           notificationId: notificationToDelete.id,
-          photoPublicId: notificationToDelete.photo?.public_id,
+          photoPath: notificationToDelete.photo?.path, // Send path for Firebase Storage deletion
         }),
       });
 
@@ -147,7 +147,9 @@ function Notifications() {
         onClose={() => setIsConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
         title="Confirm Deletion"
-        confirmText={deleteLoading ? 'Deleting...' : 'Delete'}
+        confirmText="Delete"
+        loading={deleteLoading}
+        loadingText="Deleting notification..."
       >
         <p>Are you sure you want to permanently delete this notification? This action cannot be undone.</p>
       </ConfirmModal>

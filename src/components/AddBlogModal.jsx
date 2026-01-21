@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 import './AddBlogModal.css';
 
 const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
@@ -9,6 +10,13 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const modalContentRef = useRef(null);
+
+  const {
+    uploading: isUploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
 
   const generateSlug = (title) =>
     title.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]+/g, "");
@@ -62,7 +70,7 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
       <div className="modal-content" ref={modalContentRef}>
         <h2>Create a New Blog Post</h2>
 
-        {error && <div className="error-message">{error}</div>}
+        {(error || uploadError) && <div className="error-message">{error || uploadError.message}</div>}
 
         <input
           type="text"
@@ -91,7 +99,6 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
       "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor",
       "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media",
       "table", "help", "wordcount", "emoticons", "formatpainter"
-      // ⬆ removed "textpattern" ONLY
     ],
     toolbar:
       "undo redo | styleselect formatselect fontfamily fontsize | " +
@@ -137,32 +144,48 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
       }
     ],
     content_style: `
+      body { font-family:Helvetica,Arial,sans-serif; font-size:14px }
       img.img-shadow { box-shadow: 4px 4px 12px rgba(0,0,0,0.3); }
       img.img-border { border: 2px solid #ccc; padding: 2px; }
     `,
-    automatic_uploads: false,
+    automatic_uploads: true,
     file_picker_types: "image",
-    file_picker_callback: (callback) => {
+    file_picker_callback: (callback, value, meta) => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
       input.onchange = async (e) => {
         const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () =>
-          callback(reader.result, { alt: file.name });
-        reader.readAsDataURL(file);
+        try {
+          const photoData = await uploadPhoto(file, 'blog_images/');
+          const photoURL = typeof photoData === 'string' ? photoData : photoData.url;
+          callback(photoURL, { alt: file.name });
+        } catch (err) {
+            console.error('Image upload failed', err);
+            // You can use the editor's notification API to show an error
+            // tinymce.activeEditor.notificationManager.open({
+            //   text: 'Image upload failed.',
+            //   type: 'error'
+            // });
+        }
       };
       input.click();
     },
   }}
 />
 
-
+        {isUploading && (
+            <div className="upload-progress-overlay">
+                <p>Uploading Image: {progress.toFixed(0)}%</p>
+                <div className="progress-bar">
+                    <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+                </div>
+            </div>
+        )}
 
         <div className="modal-actions">
-          <button onClick={onClose} className="btn btn-secondary" disabled={loading}>Cancel</button>
-          <button onClick={handleSave} className="btn btn-primary" disabled={loading}>
+          <button onClick={onClose} className="btn btn-secondary" disabled={loading || isUploading}>Cancel</button>
+          <button onClick={handleSave} className="btn btn-primary" disabled={loading || isUploading}>
             {loading ? "Saving..." : "Save Post"}
           </button>
         </div>

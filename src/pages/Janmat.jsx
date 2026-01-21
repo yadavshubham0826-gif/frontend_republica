@@ -27,6 +27,7 @@ const Janmat = () => {
   const [error, setError] = useState('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [flipbookToDelete, setFlipbookToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { palette, loading: paletteLoading } = useColorPalette();
   const gradient = palette.gradient;
@@ -60,6 +61,7 @@ const Janmat = () => {
   const onConfirmDelete = async () => {
     if (!flipbookToDelete) return;
 
+    setIsDeleting(true);
     try {
       // Call the new secure backend endpoint for deleting flipbooks
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-flipbook`, {
@@ -68,7 +70,7 @@ const Janmat = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           flipbookId: flipbookToDelete.id,
-          coverPhotoPublicId: flipbookToDelete.coverPhoto?.public_id, // Send public_id for deletion
+          coverPhotoPath: flipbookToDelete.coverPhoto?.path, // Send path for Firebase Storage deletion
         }),
       });
 
@@ -81,6 +83,7 @@ const Janmat = () => {
     } catch (err) {
       setError("Failed to delete flipbook.");
     } finally {
+      setIsDeleting(false);
       setIsDeleteModalOpen(false);
       setFlipbookToDelete(null);
     }
@@ -172,6 +175,8 @@ const Janmat = () => {
               onConfirm={onConfirmDelete}
               title="Confirm Deletion"
               confirmText="Delete"
+              loading={isDeleting}
+              loadingText="Deleting flipbook..."
             >
               <p>Are you sure you want to delete the flipbook for the year <strong>{flipbookToDelete?.publishingYear}</strong>? This action cannot be undone.</p>
             </ConfirmModal>

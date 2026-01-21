@@ -5,7 +5,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   // Define the logo URL
-  const logoUrl = "https://res.cloudinary.com/dyv1rtwvh/image/upload/v1763817711/WhatsApp_Image_2025-11-22_at_18.42.47_fa6778ca_nqifs2.jpg";
+  const logoUrl = "https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FMain%20Page%2Frepublica_logo.jpg?alt=media&token=5400e619-c51a-48f6-8240-9f88b15ac83d";
 
   return (
     <footer className="site-footer">

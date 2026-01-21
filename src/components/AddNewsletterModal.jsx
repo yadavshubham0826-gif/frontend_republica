@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Editor } from '@tinymce/tinymce-react';
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 import ConfirmModal from './ConfirmModal';
 import '../styles/style.css';
-
-// Helper to extract Cloudinary public_id from a URL
-const getPublicIdFromUrl = (url) => {
-  if (!url || !url.includes("cloudinary.com")) return null;
-  try {
-    const pathname = new URL(url).pathname;
-    const match = pathname.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9_]+$/);
-    return match ? match[1] : null;
-  } catch {
-    return null;
-  }
-};
 
 const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEdit }) => {
   const [name, setName] = useState('');
@@ -25,6 +14,13 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editImageChoice, setEditImageChoice] = useState(null);
+
+  const {
+    uploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
 
   const isEditMode = !!newsletterToEdit;
 
@@ -48,32 +44,29 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
     e.preventDefault();
     setError('');
     if (!name || !topic || !content) {
-      setError('Topic and Content are required.');
+      setError('Name, Topic and Content are required.');
       return;
     }
     setLoading(true);
 
     try {
-      // Convert new preview image to base64 to send to the backend
-      let previewImageBase64 = null;
+      let previewImageURL = null;
       if (previewImage && editImageChoice) {
-        const reader = new FileReader();
-        reader.readAsDataURL(previewImage);
-        previewImageBase64 = await new Promise(resolve => reader.onload = () => resolve(reader.result));
+        const previewImageData = await uploadPhoto(previewImage, 'newsletter_previews/');
+        previewImageURL = typeof previewImageData === 'string' ? previewImageData : previewImageData.url;
       }
 
-      // Call the new secure backend endpoint
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/update-newsletter`, {
         method: "POST",
-        credentials: 'include', // <-- ADD THIS LINE
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-        name,
-        topic,
-        content,
-        previewImageBase64,
-        oldPreviewImageUrl: newsletterToEdit?.previewImageUrl,
-        isEditMode,
+          name,
+          topic,
+          content,
+          previewImageURL, // Sending URL
+          oldPreviewImageUrl: newsletterToEdit?.previewImageUrl,
+          isEditMode,
         }),
       });
 
@@ -98,11 +91,11 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
   };
 
   const handleDelete = async () => {
+    // This part remains the same as it sends the URL to the backend for deletion
     try {
-      // Call the new secure backend endpoint for deletion
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-newsletter`, {
         method: "POST",
-        credentials: 'include', // <-- ADD THIS LINE
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ previewImageUrl: newsletterToEdit?.previewImageUrl }),
       });
@@ -120,12 +113,14 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
     if (onNewsletterAdded) onNewsletterAdded(); // Trigger refresh
   };
 
+  const isLoading = loading || uploading;
+
   return ReactDOM.createPortal(
     <div className="modal-backdrop">
-      <div className="modal-content">
+      <div className="modal-content large-modal">
         <button className="close-modal-btn" onClick={onClose}>&times;</button>
         <h2 className="modal-title">{isEditMode ? 'Edit Latest Newsletter' : 'Add Latest Newsletter'}</h2>
-        {error && <div className="error-message">{error}</div>}
+        {(error || uploadError) && <div className="error-message">{error || uploadError.message}</div>}
         <form onSubmit={handleSubmit} className="add-blog-form">
           <div className="form-group">
             <label htmlFor="name">Name</label>
@@ -156,98 +151,57 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
               <input id="previewImage" type="file" accept="image/*" onChange={handleFileChange} />
             </div>
           )}
+          
+          {uploading && (
+            <div className="progress-bar-container">
+              <p>Uploading... {progress.toFixed(0)}%</p>
+              <div className="progress-bar"><div className="progress-bar-fill" style={{ width: `${progress}%` }}></div></div>
+            </div>
+          )}
 
           <div className="form-group">
             <label>Content</label>
- <Editor
-   apiKey="wlob6qkemz0muvfnbvbjltl5n6419jw1uyoq4u2ym4hok7o6"
-   value={content}
-   onEditorChange={(newContent) => setContent(newContent)}
-   init={{
-     height: 500,
-     menubar: true,
-     plugins: [
-       "advlist", "autolink", "lists", "link", "image", "charmap", "preview", "anchor",
-       "searchreplace", "visualblocks", "code", "fullscreen", "insertdatetime", "media",
-       "table", "help", "wordcount", "emoticons", "formatpainter"
-       // ⬆ removed "textpattern" ONLY
-     ],
-     toolbar:
-       "undo redo | styleselect formatselect fontfamily fontsize | " +
-       "bold italic underline strikethrough forecolor backcolor | " +
-       "alignleft aligncenter alignright alignjustify | " +
-       "bullist numlist | outdent indent | " +
-       "link image | table | emoticons | " +
-       "removeformat | code fullscreen",
-     style_formats: [
-       {
-         title: 'Headers',
-         items: [
-           { title: 'Heading 1', format: 'h1' },
-           { title: 'Heading 2', format: 'h2' },
-           { title: 'Heading 3', format: 'h3' },
-           { title: 'Heading 4', format: 'h4' },
-           { title: 'Heading 5', format: 'h5' },
-           { title: 'Heading 6', format: 'h6' }
-         ]
-       },
-       {
-         title: 'Inline',
-         items: [
-           { title: 'Bold', format: 'bold' },
-           { title: 'Italic', format: 'italic' },
-           { title: 'Underline', format: 'underline' },
-           { title: 'Strikethrough', format: 'strikethrough' }
-         ]
-       },
-       {
-         title: 'Blocks',
-         items: [
-           { title: 'Paragraph', format: 'p' },
-           { title: 'Blockquote', format: 'blockquote' }
-         ]
-       },
-       {
-         title: 'Image Styles',
-         items: [
-           { title: 'Image Shadow', selector: 'img', classes: 'img-shadow' },
-           { title: 'Image Border', selector: 'img', classes: 'img-border' }
-         ]
-       }
-     ],
-     content_style: `
-       img.img-shadow { box-shadow: 4px 4px 12px rgba(0,0,0,0.3); }
-       img.img-border { border: 2px solid #ccc; padding: 2px; }
-     `,
-     automatic_uploads: false,
-     file_picker_types: "image",
-     file_picker_callback: (callback) => {
-       const input = document.createElement("input");
-       input.type = "file";
-       input.accept = "image/*";
-       input.onchange = async (e) => {
-         const file = e.target.files[0];
-         const reader = new FileReader();
-         reader.onload = () =>
-           callback(reader.result, { alt: file.name });
-         reader.readAsDataURL(file);
-       };
-       input.click();
-     },
-   }}
- />
- 
+            <Editor
+              apiKey="wlob6qkemz0muvfnbvbjltl5n6419jw1uyoq4u2ym4hok7o6"
+              value={content}
+              onEditorChange={(newContent) => setContent(newContent)}
+              init={{
+                height: 400,
+                menubar: true,
+                plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount emoticons formatpainter',
+                toolbar: 'undo redo | styleselect formatselect fontfamily fontsize | bold italic underline strikethrough forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent | link image | table | emoticons | removeformat | code fullscreen',
+                file_picker_types: "image",
+                file_picker_callback: async (callback, value, meta) => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "image/*";
+                  input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    try {
+                      const photoData = await uploadPhoto(file, 'newsletter_content/');
+                      const photoURL = typeof photoData === 'string' ? photoData : photoData.url;
+                      callback(photoURL, { alt: file.name });
+                    } catch (err) {
+                      console.error("Image upload failed:", err);
+                    }
+                  };
+                  input.click();
+                },
+              }}
+            />
           </div>
+
           <div className="confirm-modal-actions">
             {isEditMode && (
-              <button type="button" className="modal-button btn-danger" onClick={() => setShowDeleteConfirm(true)} disabled={loading} style={{ marginRight: 'auto' }}>
+              <button type="button" className="modal-button btn-danger" onClick={() => setShowDeleteConfirm(true)} disabled={isLoading} style={{ marginRight: 'auto' }}>
                 Delete Newsletter
               </button>
             )}
-            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={loading}>Cancel</button>
-            <button type="submit" className="modal-button modal-primary-btn" disabled={loading}>{loading ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Save Newsletter')}</button>
+            <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isLoading}>Cancel</button>
+            <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>{isLoading ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Save Newsletter')}</button>
           </div>
         </form>
+
         {isEditMode && (
           <ConfirmModal
             isOpen={showDeleteConfirm}

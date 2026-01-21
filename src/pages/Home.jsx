@@ -21,7 +21,7 @@ const Home = () => {
   const mainRef = useRef(null);
   const { palette, loading, setImageUrl } = useColorPalette(); 
   const POSTS_PER_PAGE = 3;
-  const heroImageUrl = "https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764008799/gallery/demo4/xtyuxyieev1coxuhleq3.png";
+  const heroImageUrl = "https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FMain%20Page%2FAdobe_Express_-_file_pcjl0s.jpg?alt=media&token=24589b70-edaa-48dc-833d-672ff566876e";
 
   useHeaderOffset();
 
@@ -352,32 +352,31 @@ function TeamSection() {
 
      <div style={styles.wrapper}>
   <TeamCard
-    img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Isha_Yadav_President_eugnlb.jpg"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FIsha_Yadav_President_eugnlb.jpg?alt=media&token=f709f052-ab18-47ed-9683-13b9a8a65cdf"
     name="Isha Yadav"
-    role="PRESIDENT"
-  />
+    role="President"/>
   <TeamCard
-    img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764336560/Divyanshe_my2ao0.jpg"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FDivyanshe_my2ao0.jpg?alt=media&token=69f7cd99-9500-4eb0-bb40-cc8cc70891a6"
     name="Divyanshe"
     role="Treasurer"
   />
   <TeamCard
-    img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Khushi_VP_zmnvxd.jpg"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FKhushi_VP_zmnvxd.jpg?alt=media&token=8184eed9-e3ea-4d8d-844d-db0358c4008a"
     name="Khushi Iwanathe"
     role="Vice President"
   />
   <TeamCard
-  img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Kaumudi_General_Secretary_aqwayg.jpg"
+  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FKaumudi_General_Secretary_aqwayg.jpg?alt=media&token=168eb5ac-ad82-49be-8094-e95455a03e3a"
   name="Kaumudi Sharma"
   role="General Secretary"
   />
   <TeamCard
-  img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764334385/Rashi_JS_n4dpcw.jpg"
+  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FRashi_JS_n4dpcw.jpg?alt=media&token=382ef00b-5385-48ec-93e8-9a8f050c579c"
   name="Rashi"
   role="Joint Secretary"
   />
    <TeamCard
-  img="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1764338162/Vashu_vnjjtb.jpg"
+  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FVashu_vnjjtb.jpg?alt=media&token=ab1a60c6-6ff3-4a37-9e14-65544bd04c7e"
   name="Vashu Yadav"
   role="Cultural Secretary"
   />

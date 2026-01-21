@@ -453,8 +453,6 @@ main#main-content {
 .home-hero-image {
     width: 100%; /* Make the image fill the container's width */
     height: auto; /* Maintain the aspect ratio to prevent distortion */
-    max-height: 75vh; /* Increased height (75% of viewport height) */
-    object-fit: cover; /* Cover the area, may crop slightly but looks better */
 }
 
 /* Sections */
@@ -840,9 +838,12 @@ h2[id], h1[id] {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
-        right: 0;
-        left: auto;
-        margin-left: 0;
+        bottom: 100%; /* Position it to open upwards from the container */
+        top: auto;
+        left: 0; 
+        right: auto;
+        margin-bottom: 10px; /* Add some space between button and menu */
+        z-index: 1100;
     }
     .site-nav .dropdown.open .dropdown-arrow { transform: rotate(180deg); }
 

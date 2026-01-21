@@ -135,7 +135,7 @@ const Header = () => {
             <img
               id="site-logo"
               className="logo-mark"
-              src="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1763817711/WhatsApp_Image_2025-11-22_at_18.42.47_fa6778ca_nqifs2.jpg"
+              src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FMain%20Page%2Frepublica_logo.jpg?alt=media&token=5400e619-c51a-48f6-8240-9f88b15ac83d"
               alt="Republica logo"
             />
             <span className="logo-text">
@@ -146,7 +146,7 @@ const Header = () => {
             <img
               id="drc-logo"
               className="logo-mark"
-              src="https://res.cloudinary.com/dyv1rtwvh/image/upload/v1763817290/drc-logo_bllde2.png"
+              src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FMain%20Page%2Fdrc-logo_bllde2.png?alt=media&token=c034f7d8-7cec-4a2d-918a-92d89594aec3"
               alt="DRC logo"
             />
           </Link>

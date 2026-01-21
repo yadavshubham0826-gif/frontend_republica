@@ -46,7 +46,7 @@ const LatestJanmat = () => {
       <section
         className="page-hero"
         style={{
-          background: !paletteLoading && palette?.gradient ? palette.gradient : '#e0f2fe',
+          background: !paletteLoading && palette?.gradient ? palette.gradient : 'linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))',
           transition: 'background 0.5s ease-in-out'
         }}
       >

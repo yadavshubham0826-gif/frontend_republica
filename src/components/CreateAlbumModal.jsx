@@ -195,17 +195,17 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
             </div>
           </div>
 
+          {error && <p className="error-message">{error}</p>}
+          {uploadError && <p className="error-message">{uploadError.message}</p>}
+
           {uploading && (
-            <div className="progress-bar-container">
+            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
               <p>Uploading cover photo... {progress.toFixed(0)}%</p>
               <div className="progress-bar">
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
               </div>
             </div>
           )}
-
-          {error && <p className="error-message">{error}</p>}
-          {uploadError && <p className="error-message">{uploadError.message}</p>}
 
           <div className="modal-actions">
             <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isCreating || uploading}>

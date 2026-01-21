@@ -90,14 +90,16 @@ const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
             <label htmlFor="coverPhoto">Cover Photo</label>
             <input id="coverPhoto" type="file" accept="image/*" onChange={handleFileChange} />
           </div>
+          
           {uploading && (
-            <div className="progress-bar-container">
+            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
               <p>Uploading... {progress.toFixed(0)}%</p>
               <div className="progress-bar">
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
               </div>
             </div>
           )}
+          
           <div className="confirm-modal-actions">
             <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isLoading}>Cancel</button>
             <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Flipbook'}</button>

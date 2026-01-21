@@ -102,12 +102,6 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
             <label htmlFor="notificationPhoto">Photo (Optional)</label>
             <input id="notificationPhoto" type="file" accept="image/*" onChange={handleFileChange} />
           </div>
-          {uploading && (
-            <div className="progress-bar-container">
-              <p>Uploading... {progress.toFixed(0)}%</p>
-              <div className="progress-bar"><div className="progress-bar-fill" style={{ width: `${progress}%` }}></div></div>
-            </div>
-          )}
           <div className="form-group">
             <label htmlFor="notificationLinkUrl">Link URL (Optional)</label>
             <input id="notificationLinkUrl" type="url" placeholder="https://example.com" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} />
@@ -116,6 +110,16 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
             <label htmlFor="notificationLinkName">Link Common Name (Optional)</label>
             <input id="notificationLinkName" type="text" placeholder="e.g., Click Here for Details" value={linkName} onChange={(e) => setLinkName(e.target.value)} />
           </div>
+          
+          {uploading && (
+            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
+              <p>Uploading... {progress.toFixed(0)}%</p>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
+          
           <div className="modal-actions">
             <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isLoading}>Cancel</button>
             <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Notification'}</button>

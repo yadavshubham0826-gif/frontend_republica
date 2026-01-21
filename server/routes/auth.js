@@ -28,50 +28,78 @@ module.exports = function(db) {
   // === GOOGLE OAUTH ROUTES ===
 
   // Google Auth Routes
-  router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+  router.get('/google', (req, res, next) => {
+    console.log('🔵 Google OAuth initiated');
+    console.log('   Client ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'MISSING!');
+    console.log('   Callback URL:', process.env.GOOGLE_CALLBACK_URL);
+    passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+  });
 
-  router.get('/google/callback', passport.authenticate('google', {
-    failureRedirect: '/auth/login-failure',  // A path on your backend's auth router
-    successRedirect: '/auth/login-success'   // A path on your backend's auth router
-  }));
+  router.get('/google/callback', (req, res, next) => {
+    console.log('🔄 Google OAuth callback received');
+    console.log('   Query params:', req.query);
+    passport.authenticate('google', {
+      failureRedirect: '/auth/login-failure',  // A path on your backend's auth router
+      successRedirect: '/auth/login-success'   // A path on your backend's auth router
+    })(req, res, next);
+  });
 
   // Route to handle login failure
   router.get('/login-failure', (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/login?error=true`);
+    console.error('❌ Google OAuth login failed');
+    console.error('   Error:', req.query.error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/login?error=oauth_failed`);
   });
 
   // Route to handle login success
   router.get('/login-success', async (req, res) => {
-    if (req.user) {
-      try {
-        const userId = req.user.id || req.user._id.toString();
-        // Sync user to Firestore for Storage rules
-        await syncUserToFirestore(userId, {
-          name: req.user.name,
-          email: req.user.email,
-          role: req.user.role,
-          authMethod: req.user.authMethod,
-        });
-        
-        // Create a custom token for Firebase client-side auth
-        const customToken = await admin.auth().createCustomToken(userId);
-        const userData = {
-          id: req.user.id,
-          name: req.user.name,
-          email: req.user.email,
-          role: req.user.role,
-          customToken, // Add token to user data
-        };
-        // Redirect to a frontend URL with user data as query parameters
-        res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
-      } catch (tokenError) {
-        console.error("Error creating custom token for Google user:", tokenError);
-        // Fallback: redirect without the token if creation fails
-        const userData = { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role };
-        res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
-      }
-    } else {
-      res.status(401).send('User not authenticated');
+    console.log('✅ Google OAuth login success');
+    console.log('   User:', req.user ? { id: req.user.id, email: req.user.email } : 'MISSING!');
+    
+    if (!req.user) {
+      console.error('❌ No user found in session after Google OAuth');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=no_user`);
+    }
+
+    if (!process.env.FRONTEND_AUTH_CALLBACK_URL) {
+      console.error('❌ FRONTEND_AUTH_CALLBACK_URL is not set in environment variables!');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/login?error=config_error`);
+    }
+
+    try {
+      const userId = req.user.id || req.user._id.toString();
+      console.log('   User ID:', userId);
+      
+      // Sync user to Firestore for Storage rules
+      await syncUserToFirestore(userId, {
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role,
+        authMethod: req.user.authMethod,
+      });
+      
+      // Create a custom token for Firebase client-side auth
+      const customToken = await admin.auth().createCustomToken(userId);
+      const userData = {
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role,
+        customToken, // Add token to user data
+      };
+      
+      console.log('   Redirecting to:', process.env.FRONTEND_AUTH_CALLBACK_URL);
+      // Redirect to a frontend URL with user data as query parameters
+      res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
+    } catch (tokenError) {
+      console.error("❌ Error creating custom token for Google user:", tokenError);
+      // Fallback: redirect without the token if creation fails
+      const userData = { id: req.user.id, name: req.user.name, email: req.user.email, role: req.user.role };
+      console.log('   Fallback redirect (no token)');
+      res.redirect(`${process.env.FRONTEND_AUTH_CALLBACK_URL}?user=${encodeURIComponent(JSON.stringify(userData))}`);
     }
   });
 

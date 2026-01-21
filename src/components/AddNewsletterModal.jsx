@@ -151,13 +151,6 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
               <input id="previewImage" type="file" accept="image/*" onChange={handleFileChange} />
             </div>
           )}
-          
-          {uploading && (
-            <div className="progress-bar-container">
-              <p>Uploading... {progress.toFixed(0)}%</p>
-              <div className="progress-bar"><div className="progress-bar-fill" style={{ width: `${progress}%` }}></div></div>
-            </div>
-          )}
 
           <div className="form-group">
             <label>Content</label>
@@ -190,6 +183,15 @@ const AddNewsletterModal = ({ isOpen, onClose, onNewsletterAdded, newsletterToEd
               }}
             />
           </div>
+
+          {uploading && (
+            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
+              <p>Uploading... {progress.toFixed(0)}%</p>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
 
           <div className="confirm-modal-actions">
             {isEditMode && (

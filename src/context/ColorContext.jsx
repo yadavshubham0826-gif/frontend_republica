@@ -29,19 +29,23 @@ export const ColorPaletteProvider = ({ children }) => {
           return luma > 40;
         });
 
-        let gradient = "linear-gradient(135deg, #e0f2fe, #a8d5e2)";
+        // Default gradient: dark reddish-pink to greyish-brown (Janmat'26 colors)
+        const defaultGradient = "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))";
+        
+        let gradient = defaultGradient;
         if (suitable.length >= 2) {
           gradient = `linear-gradient(135deg, ${suitable
             .map(c => `rgb(${c.join(",")})`)
             .join(", ")})`;
         } else if (suitable.length === 1) {
-          gradient = `linear-gradient(135deg, rgb(${suitable[0].join(",")}), #fff)`;
+          gradient = `linear-gradient(135deg, rgb(${suitable[0].join(",")}), rgb(139, 115, 85))`;
         }
 
         setPalette({ gradient });
       } catch (err) {
         console.error("ColorThief failed:", err);
-        setPalette({ gradient: "linear-gradient(135deg, #e0f2fe, #a8d5e2)" });
+        // Default fallback: dark reddish-pink to greyish-brown
+        setPalette({ gradient: "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))" });
       } finally {
         setLoading(false);
       }
@@ -49,7 +53,8 @@ export const ColorPaletteProvider = ({ children }) => {
 
     img.onerror = () => {
       console.error("Image load failed:", imageUrl);
-      setPalette({ gradient: "linear-gradient(135deg, #e0f2fe, #a8d5e2)" });
+      // Default fallback: dark reddish-pink to greyish-brown
+      setPalette({ gradient: "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))" });
       setLoading(false);
     };
   }, [imageUrl]);

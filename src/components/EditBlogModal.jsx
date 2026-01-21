@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Editor } from "@tinymce/tinymce-react";
+import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 
 const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
   const [title, setTitle] = useState("");
@@ -8,6 +9,13 @@ const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const modalContentRef = useRef(null);
+
+  const {
+    uploading: isUploading,
+    progress,
+    error: uploadError,
+    uploadPhoto,
+  } = useFirebasePhotoUploader();
 
   useEffect(() => {
     if (!postToEdit) return;
@@ -67,7 +75,7 @@ const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
       <div className="modal-content" ref={modalContentRef}>
         <h2>Edit Blog Post</h2>
 
-        {error && <div className="error-message">{error}</div>}
+        {(error || uploadError) && <div className="error-message">{error || uploadError.message}</div>}
 
         <input
           type="text"
@@ -145,34 +153,44 @@ const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
       img.img-shadow { box-shadow: 4px 4px 12px rgba(0,0,0,0.3); }
       img.img-border { border: 2px solid #ccc; padding: 2px; }
     `,
-    automatic_uploads: false,
+    automatic_uploads: true,
     file_picker_types: "image",
-    file_picker_callback: (callback) => {
+    file_picker_callback: (callback, value, meta) => {
       const input = document.createElement("input");
       input.type = "file";
       input.accept = "image/*";
       input.onchange = async (e) => {
         const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = () =>
-          callback(reader.result, { alt: file.name });
-        reader.readAsDataURL(file);
+        try {
+          const photoData = await uploadPhoto(file, 'blog_images/');
+          const photoURL = typeof photoData === 'string' ? photoData : photoData.url;
+          callback(photoURL, { alt: file.name });
+        } catch (err) {
+          console.error('Image upload failed', err);
+        }
       };
       input.click();
     },
   }}
 />
 
-
         <div className="modal-actions">
-          <button onClick={onClose} className="btn btn-secondary">
+          {isUploading && (
+            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
+              <p>Uploading Image: {progress.toFixed(0)}%</p>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
+          <button onClick={onClose} className="btn btn-secondary" disabled={loading || isUploading}>
             Cancel
           </button>
 
           <button
             onClick={handleUpdate}
             className="btn btn-primary"
-            disabled={loading}
+            disabled={loading || isUploading}
           >
             {loading ? "Saving..." : "Save Changes"}
           </button>

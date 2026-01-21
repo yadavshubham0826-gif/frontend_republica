@@ -125,7 +125,7 @@ const Home = () => {
       <div 
         className="home-heading-container" 
         style={{ 
-          background: !loading && palette?.gradient ? palette.gradient : "#f0f4f8", 
+          background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))", 
           padding: "60px 0",
           color: "#fff",
           textAlign: "center"
@@ -169,7 +169,7 @@ const Home = () => {
       <div 
         id="blog"
         className="home-blog-section" 
-        style={{ background: !loading && palette?.gradient ? palette.gradient : "#f0f4f8" }}
+        style={{ background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))" }}
       >
         <div className="container">
           <FadeInSection>

@@ -20,7 +20,8 @@ export const ColorPaletteProvider = ({ children }) => {
     if (error) {
       console.error("ColorThief Error:", error);
       // Set a fallback gradient if the image fails to load or process
-      setPalette({ gradient: 'linear-gradient(135deg, #e0f2fe, #a8d5e2)' });
+      // Default: dark reddish-pink to greyish-brown (Janmat'26 colors)
+      setPalette({ gradient: 'linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))' });
       return;
     }
 
@@ -36,11 +37,12 @@ export const ColorPaletteProvider = ({ children }) => {
         return luma > 40; // Exclude very dark colors
       });
 
-      let newGradient = 'linear-gradient(135deg, #e0f2fe, #a8d5e2)'; // Default fallback
+      // Default fallback: dark reddish-pink to greyish-brown (Janmat'26 colors)
+      let newGradient = 'linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))';
       if (suitableColors.length >= 2) {
         newGradient = `linear-gradient(135deg, ${suitableColors.join(', ')})`;
       } else if (suitableColors.length === 1) {
-        newGradient = `linear-gradient(135deg, ${suitableColors[0]}, #ffffff)`;
+        newGradient = `linear-gradient(135deg, ${suitableColors[0]}, rgb(139, 115, 85))`;
       }
 
       setPalette({ gradient: newGradient });

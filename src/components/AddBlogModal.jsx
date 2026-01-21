@@ -174,16 +174,15 @@ const AddBlogModal = ({ isOpen, onClose, onAddBlog }) => {
   }}
 />
 
-        {isUploading && (
-            <div className="upload-progress-overlay">
-                <p>Uploading Image: {progress.toFixed(0)}%</p>
-                <div className="progress-bar">
-                    <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-                </div>
-            </div>
-        )}
-
         <div className="modal-actions">
+          {isUploading && (
+            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
+              <p>Uploading Image: {progress.toFixed(0)}%</p>
+              <div className="progress-bar">
+                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
           <button onClick={onClose} className="btn btn-secondary" disabled={loading || isUploading}>Cancel</button>
           <button onClick={handleSave} className="btn btn-primary" disabled={loading || isUploading}>
             {loading ? "Saving..." : "Save Post"}

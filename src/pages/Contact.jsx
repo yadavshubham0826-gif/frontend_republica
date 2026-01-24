@@ -67,7 +67,7 @@ const Contact = () => {
         <div className="container">
           <FadeInSection>
             <h1>Contact Us</h1>
-            <p>Get in touch with our department for admissions, inquiries, and more.</p>
+             <p style={{ fontSize: "16px", lineHeight: "1.6" }}>Get in touch with our department for inquiries,joining and much more.</p>
           </FadeInSection>
         </div>
       </section>

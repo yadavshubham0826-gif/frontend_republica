@@ -17,13 +17,19 @@ function About() {
         <div className="container narrow">
           <FadeInSection>
             <h1>About Republica</h1>
-            <p>
-              Discover the mission, vision, and the people behind the Political Science Association of Daulat
-              Ram College.
+             <p style={{ fontSize: "12px", lineHeight: "1.6" }}>
+              Department of Political Science As a discipline, Political Science engages the students to understand a broad and diverse area of inquiry covering Political Ideas, Political Theory, Comparative Political Systems, Indian Politics, Global Politics, and the Administrative State. The students of Political Science are trained to develop an analytical framework to understand the multiple perspectives of understanding reality. An analytical study equips them to not only argue, interrogate and contest the linear approach, but also, to move towards an adequate understanding of the issues, challenges, dilemmas, and conflicts that are critical to contemporary polity, economy and society. While developing a clear understanding of the fundamentals of Political Science, they also get a good grounding in both theoretical and empirical knowledge that is essential to the discipline. Thus it enables the students to revisit some of the universal concepts, theories and practices by locating them in the larger historical context of the social, economic, political, and cultural processes of the global order. Study of Political Science opens avenues for career in Research, Teaching, Civil Services, Journalism, Law, NGOs and other agencies that work in the areas like Gender studies, Human Rights, Rural and Urban Development, Public Policy and International Relations. Thus our graduates/post graduates become influential performers in a range of professional settings.
             </p>
           </FadeInSection>
         </div>
       </section>
+      
+      {/* Our Team Heading */}
+      <div className="container" style={{ textAlign: 'center', padding: '2rem 0' }}>
+        <FadeInSection>
+          <h2 style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text)', margin: 0 }}>Our Team</h2>
+        </FadeInSection>
+      </div>
 
       {/* Team Sections */}
       <div className="team-container">
@@ -131,6 +137,7 @@ function About() {
         </section>
       </div>
     </main>
+    
   );
 }
 

@@ -113,6 +113,13 @@ const Header = () => {
     setIsNavOpen(false);
     setIsAcademicsDropdownOpen(false);
     setIsJanmatDropdownOpen(false);
+    
+    // Scroll to top when navigating
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant'
+    });
   };
 
   const handleEditNewsletterClick = async () => {

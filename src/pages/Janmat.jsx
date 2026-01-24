@@ -100,7 +100,7 @@ const Janmat = () => {
               <FadeInSection>
                 <div className="text-center">
                   <h1>Janmat Editions</h1>
-                  <p>Explore all the published editions of our newsletter, Janmat.</p>
+                   <p style={{ fontSize: "16px", lineHeight: "1.6" }}>Explore all the published editions of our newsletter, Janmat.</p>
                 </div>
               </FadeInSection>
             </div>

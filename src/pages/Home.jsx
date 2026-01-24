@@ -8,6 +8,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Imp
 import '../styles/style.css';
 import '../styles/HomeGallery.css';
 import TeamCard from "./TeamCard";
+import ImageSlideshow from "../components/ImageSlideshow";
 import React from "react";
 const Home = () => {
   const [allPosts, setAllPosts] = useState([]);
@@ -17,11 +18,12 @@ const Home = () => {
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [totalPages, setTotalPages] = useState(0);
   const [galleryAlbums, setGalleryAlbums] = useState([]);
-  const [loadingAlbums, setLoadingAlbums] = useState(true);  
+  const [loadingAlbums, setLoadingAlbums] = useState(true);
+  const [slideshowImages, setSlideshowImages] = useState([]);
   const mainRef = useRef(null);
   const { palette, loading, setImageUrl } = useColorPalette(); 
   const POSTS_PER_PAGE = 3;
-  const heroImageUrl = "https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FMain%20Page%2FAdobe_Express_-_file_pcjl0s.jpg?alt=media&token=24589b70-edaa-48dc-833d-672ff566876e";
+  const heroImageUrl = "https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FScreenshot%202026-01-24%20162436.png?alt=media&token=e5c66d54-5b57-431c-9100-76abd09973c3";
 
   useHeaderOffset();
 
@@ -72,6 +74,22 @@ const Home = () => {
     };
     fetchAlbums();
   }, []);
+
+  // Extract all images from albums for slideshow
+  useEffect(() => {
+    const allImages = [];
+    galleryAlbums.forEach(album => {
+      if (album.imageUrls && Array.isArray(album.imageUrls)) {
+        album.imageUrls.forEach(image => {
+          if (image && image.url) {
+            allImages.push(image.url);
+          }
+        });
+      }
+    });
+    console.log('Extracted slideshow images:', allImages.length, allImages);
+    setSlideshowImages(allImages);
+  }, [galleryAlbums]);
 
   // Update latest posts based on pagination
   useEffect(() => {
@@ -151,14 +169,27 @@ const Home = () => {
 
       <section id="about" className="section">
         <div className="container">
-          <FadeInSection delay={0.1}>
-            <div className="white-box">
-              <h2>About the Society</h2>
-              <p>Describe your mission, activities, and impact. This is placeholder text.</p>
-              <Link to="/about" className="btn-rect-3d">Know More</Link>
-                          </div>
-          </FadeInSection>
+          <div className="about-slideshow-wrapper">
+            <FadeInSection delay={0.1}>
+              <div className="white-box about-section-content">
+                <h2>About the Society</h2>
+                <p>Department of Political Science As a discipline, Political Science engages the students to understand a broad and diverse area of inquiry covering Political Ideas, Political Theory, Comparative Political Systems, Indian Politics, Global Politics, and the Administrative State. The students of Political Science are trained to develop an analytical framework to understand the multiple perspectives of understanding reality. An analytical study equips them to not only argue, interrogate and contest the linear approach, but also, to move towards an adequate understanding of the issues, challenges, dilemmas, and conflicts that are critical to contemporary polity, economy and society..</p>
+                <Link to="/about" className="btn-rect-3d">Know More</Link>
+              </div>
+            </FadeInSection>
+            <FadeInSection delay={0.2}>
+              <div className="slideshow-section">
+                {loadingAlbums ? (
+                  <div style={{ padding: '2rem', textAlign: 'center', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <p>Loading slideshow...</p>
                   </div>
+                ) : (
+                  <ImageSlideshow images={slideshowImages} />
+                )}
+              </div>
+            </FadeInSection>
+          </div>
+        </div>
       </section>
       {/*---------------------Team Section----------------------*/}
       <TeamSection />

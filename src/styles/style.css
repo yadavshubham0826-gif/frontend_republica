@@ -1061,6 +1061,45 @@ h2[id], h1[id] {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: adds a subtle shadow */
 }
 
+/* Two-column layout for about section and slideshow */
+.about-slideshow-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+}
+
+.about-section-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.about-section-content .btn-rect-3d {
+    align-self: flex-start !important;
+    width: auto !important;
+    max-width: fit-content !important;
+}
+
+.slideshow-section {
+    height: 100%;
+    min-height: 400px;
+    width: 100%;
+    display: block;
+}
+
+/* Responsive: Stack on smaller screens */
+@media (max-width: 768px) {
+    .about-slideshow-wrapper {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .slideshow-section {
+        min-height: 300px;
+    }
+}
+
 /* This was already present but now it will be used by the sections you wanted to center */
 .text-center {
     text-align: center;
@@ -1970,12 +2009,14 @@ h2[id], h1[id] {
   border: 3px solid #000000 !important;     /* SOLID BLACK RECTANGLE */
   border-radius: 0 !important;              /* NO ROUNDED CORNERS */
 
-  padding: 12px 28px !important;
-  font-size: 16px !important;
+  padding: 10px 20px !important;
+  font-size: 14px !important;
   font-weight: 600 !important;
   text-decoration: none !important;
 
   display: inline-block !important;
+  width: auto !important;
+  max-width: fit-content !important;
 
   box-shadow: 0 6px 0 #000000 !important;   /* 3D SHADOW */
 

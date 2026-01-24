@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { UserProvider } from "./context/UserContext";
 import { ColorPaletteProvider } from "./context/ColorContext.jsx";
 import MainLayout from "./components/MainLayout";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
 import Home from "./pages/Home";
@@ -28,6 +29,7 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <ScrollToTop />
         <MainLayout>
           <Routes>
             <Route path="/" element={<Home />} />

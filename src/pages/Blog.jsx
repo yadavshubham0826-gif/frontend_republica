@@ -189,7 +189,7 @@ const Blog = () => {
       <section className="page-hero" style={{ background: gradient }}>
         <div className="container narrow">
           <h1>Blog</h1>
-          <p>Insights, articles, and updates from the department. </p>
+           <p style={{ fontSize: "16px", lineHeight: "1.6" }}>Insights, articles, and updates from the department. </p>
         </div>
       </section>
 

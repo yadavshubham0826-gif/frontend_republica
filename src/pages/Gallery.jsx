@@ -133,7 +133,7 @@ const Gallery = () => {
         <div className="container narrow">
           <FadeInSection>
             <h1>Our Event Gallery</h1>
-            <p>Explore moments from our past events, workshops, and gatherings. This page showcases a comprehensive collection of our society's activities.</p>
+             <p style={{ fontSize: "16px", lineHeight: "1.6" }}>Explore moments from our past events, workshops, and gatherings. This page showcases a comprehensive collection of our society's activities.</p>
           </FadeInSection>
         </div>
       </section>

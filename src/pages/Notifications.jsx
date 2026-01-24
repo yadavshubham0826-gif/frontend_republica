@@ -92,7 +92,7 @@ function Notifications() {
         <div className="container narrow">
           <FadeInSection>
             <h1>Notifications</h1>
-            <p>
+             <p style={{ fontSize: "16px", lineHeight: "1.6" }}>
               Stay updated with the latest announcements, news, and important information from the department.
             </p>
           </FadeInSection>

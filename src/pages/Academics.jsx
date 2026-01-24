@@ -21,7 +21,7 @@ const Academics = () => {
         <div className="container narrow">
           <FadeInSection>
             <h1>Our Academics</h1>
-            <p>Welcome to the Academics section. Here you will find detailed information about our courses, faculty, research areas, and academic programs.</p>
+             <p style={{ fontSize: "14px", lineHeight: "1.6" }}>Welcome to the Academics section. Here you will find information about our faculty and also you can access Our E-Library for previous year question papers and study materials.</p>
           </FadeInSection>
         </div>
       </section>

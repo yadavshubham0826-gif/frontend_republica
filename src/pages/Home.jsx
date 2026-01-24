@@ -10,7 +10,6 @@ import '../styles/HomeGallery.css';
 import TeamCard from "./TeamCard";
 import ImageSlideshow from "../components/ImageSlideshow";
 import React from "react";
-import { Analytics } from "@vercel/analytics/next"
 const Home = () => {
   const [allPosts, setAllPosts] = useState([]);
   const [latestPosts, setLatestPosts] = useState([]);

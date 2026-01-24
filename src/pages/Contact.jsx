@@ -7,21 +7,29 @@ import Notification from '../components/Notification';
 import '../styles/style.css';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
   const [submitting, setSubmitting] = useState(false);
-  const mainRef = useRef(null);
   const [notification, setNotification] = useState({ message: '', type: '' });
 
-  useEffect(() => window.scrollTo(0, 0), []);
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useHeaderOffset();
 
   const { user } = useUser();
   const { palette, loading } = useColorPalette();
-  const gradient = palette.gradient;
+  const gradient = palette?.gradient;
 
-  const authorizedAdmins = ["10shubhamyadav@gmail.com", "15shubhamyadav@gmail.com"];
-
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,59 +43,191 @@ const Contact = () => {
     setSubmitting(true);
 
     try {
-      // Use the backend API to submit the contact form
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/contact-submission`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/contact-submission`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error || 'Failed to send message.');
       }
 
-      setNotification({ message: 'Thank you for your message! We will get back to you soon.', type: 'success' });
+      setNotification({
+        message: 'Thank you for your message! We will get back to you soon.',
+        type: 'success'
+      });
+
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
-      console.error("Error sending message: ", error);
-      setNotification({ message: 'Sorry, there was an error sending your message. Please try again.', type: 'error' });
+      console.error(error);
+      setNotification({
+        message: 'Sorry, there was an error sending your message.',
+        type: 'error'
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <p>Loading gradient...</p>;
+  if (loading) return <p>Loading...</p>;
 
   return (
     <main id="main-content" ref={mainRef}>
-      <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: '' })} />
+      <Notification
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ message: '', type: '' })}
+      />
 
+      {/* HERO */}
       <section className="page-hero" style={{ background: gradient }}>
         <div className="container">
           <FadeInSection>
             <h1>Contact Us</h1>
-             <p style={{ fontSize: "16px", lineHeight: "1.6" }}>Get in touch with our department for inquiries,joining and much more.</p>
+            <p style={{ fontSize: '16px', lineHeight: '1.6' }}>
+              Get in touch with our department for inquiries, feedback and much more.
+            </p>
           </FadeInSection>
         </div>
       </section>
 
+      {/* MAIN CONTENT */}
       <section className="section">
         <div className="container grid two">
+
+          {/* LEFT COLUMN */}
           <div>
             <FadeInSection delay={0.1}>
               <h2>Department Information</h2>
             </FadeInSection>
+
             <FadeInSection delay={0.2}>
               <div className="card" style={{ background: 'none', backdropFilter: 'none' }}>
                 <h3>Contact Details</h3>
-                <p><strong>Email:</strong> polscience@daulatramcollege.edu</p>
-                <p><strong>Phone:</strong> +91-11-XXXX-XXXX</p>
-                <p><strong>Office Hours:</strong> Monday to Friday, 9:00 AM - 5:00 PM</p>
-              </div>
-            </FadeInSection>
-            <FadeInSection delay={0.3}>
-              <div className="card" style={{ background: 'none', backdropFilter: 'none' }}>
+
+  <p>
+  <strong>
+    <a
+      className="social-link gmail"
+      href="mailto:republica.psa.drc@gmail.com?subject=Inquiry%20from%20Website&body=Hello%20Republica%20Team,%0D%0A%0D%0AI%20am%20writing%20to%20inquire%20about%20your%20department.%0D%0A%0D%0ARegards,"
+      onClick={(e) => {
+        // Desktop → Gmail Web | Mobile → Mail app
+        if (window.innerWidth > 768) {
+          e.preventDefault();
+          window.open(
+            'https://mail.google.com/mail/?view=cm&fs=1&to=republica.psa.drc@gmail.com&su=Inquiry%20from%20Website&body=Hello%20Republica%20Team,%0D%0A%0D%0AI%20am%20writing%20to%20inquire%20about%20your%20department.%0D%0A%0D%0ARegards,',
+            '_blank'
+          );
+        }
+      }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        fontWeight: '600'
+      }}
+    >
+      {/* Gmail icon */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        style={{ flexShrink: 0 }}
+      >
+        <path
+          d="M3 6.5L12 12.5L21 6.5"
+          stroke="#EA4335"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="14"
+          rx="2"
+          ry="2"
+          stroke="#EA4335"
+          strokeWidth="2"
+        />
+      </svg>
+
+      {/* Email text */}
+      <span style={{ color: '#000' }}>
+        republica.psa.drc@gmail.com
+      </span>
+    </a>
+  </strong>
+</p>
+
+
+    <p>
+  <strong>
+    <a
+    className="social-link insta"
+      href="https://www.instagram.com/republica_drc/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        fontWeight: '600',
+        background: 'linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent'
+      }}
+    >
+      {/* Instagram SVG */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="instaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#feda75" />
+            <stop offset="25%" stopColor="#fa7e1e" />
+            <stop offset="50%" stopColor="#d62976" />
+            <stop offset="75%" stopColor="#962fbf" />
+            <stop offset="100%" stopColor="#4f5bd5" />
+          </linearGradient>
+        </defs>
+
+        <rect
+          x="2"
+          y="2"
+          width="20"
+          height="20"
+          rx="5"
+          ry="5"
+          stroke="url(#instaGradient)"
+          strokeWidth="2"
+        />
+        <circle cx="12" cy="12" r="4" stroke="url(#instaGradient)" strokeWidth="2" />
+        <circle cx="17" cy="7" r="1.2" fill="url(#instaGradient)" />
+      </svg>
+
+      republica_drc
+    </a>
+  </strong>
+</p>
+
+
+                <hr style={{ margin: '20px 0', opacity: 0.3 }} />
+
                 <h3>Address</h3>
                 <p>
                   <strong>Republica Department of Political Science</strong><br />
@@ -100,48 +240,49 @@ const Contact = () => {
             </FadeInSection>
           </div>
 
-          <FadeInSection delay={0.4}>
-            <div id="message-form" className="card contact-form-card" style={{ background: 'none', backdropFilter: 'none' }}>
+          {/* RIGHT COLUMN */}
+          <FadeInSection delay={0.3}>
+            <div className="card contact-form-card" style={{ background: 'none', backdropFilter: 'none' }}>
               <h2>Send us a Message</h2>
+
               <form onSubmit={handleSubmit}>
-                {['name','email','subject','message'].map((field, idx) => (
+                {['name', 'email', 'subject', 'message'].map((field, idx) => (
                   <div key={idx} style={{ marginBottom: '15px' }}>
-                    <label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}:</label><br />
+                    <label htmlFor={field}>
+                      {field.charAt(0).toUpperCase() + field.slice(1)}:
+                    </label><br />
+
                     {field === 'message' ? (
-                      <textarea id={field} name={field} rows="4" value={formData[field]} onChange={handleChange} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                      <textarea
+                        id={field}
+                        name={field}
+                        rows="4"
+                        value={formData[field]}
+                        onChange={handleChange}
+                        required
+                        style={{ width: '100%', padding: '8px' }}
+                      />
                     ) : (
-                      <input type={field === 'email' ? 'email' : 'text'} id={field} name={field} value={formData[field]} onChange={handleChange} required style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                      <input
+                        type={field === 'email' ? 'email' : 'text'}
+                        id={field}
+                        name={field}
+                        value={formData[field]}
+                        onChange={handleChange}
+                        required
+                        style={{ width: '100%', padding: '8px' }}
+                      />
                     )}
                   </div>
                 ))}
-                <button type="submit" className="btn" disabled={submitting}>{submitting ? 'Sending...' : 'Send Message'}</button>
+
+                <button type="submit" className="btn" disabled={submitting}>
+                  {submitting ? 'Sending...' : 'Send Message'}
+                </button>
               </form>
             </div>
           </FadeInSection>
-        </div>
-      </section>
 
-      <section className="section light">
-        <div className="container">
-          <FadeInSection delay={0.5}>
-            <h2>Faculty Contact</h2>
-          </FadeInSection>
-          <div className="grid three">
-            {[
-              { name: 'Dr. Rajesh Kumar', title: 'Head of Department', email: 'rajesh.kumar@daulatramcollege.edu' },
-              { name: 'Dr. Priya Sharma', title: 'Associate Professor', email: 'priya.sharma@daulatramcollege.edu' },
-              { name: 'Dr. Amit Singh', title: 'Assistant Professor', email: 'amit.singh@daulatramcollege.edu' }
-            ].map((faculty, idx) => (
-              <FadeInSection key={idx} delay={0.6 + idx*0.1}>
-                <div className="card" style={{ background: 'none', backdropFilter: 'none' }}>
-                  <h3>{faculty.name}</h3>
-                  <p><strong>{faculty.title}</strong></p>
-                  <p>Email: {faculty.email}</p>
-                  <p>Phone: +91-11-XXXX-XXXX</p>
-                </div>
-              </FadeInSection>
-            ))}
-          </div>
         </div>
       </section>
     </main>

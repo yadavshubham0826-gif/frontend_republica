@@ -22,22 +22,7 @@ const SocialMediaSidebar = () => {
         </svg>
       </a>
 
-      {/* Facebook */}
-      <a
-        href="https://www.facebook.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Facebook Profile"
-        className="facebook-icon"
-      >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          viewBox="0 0 24 24"
-          className="social-icon"
-        >
-          <path d="M22 12a10 10 0 1 0-11.5 9.87v-6.99H8.1V12h2.4V9.8c0-2.37 1.4-3.68 3.55-3.68 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.52.72-1.52 1.46V12h2.59l-.41 2.88h-2.18v6.99A10 10 0 0 0 22 12"/>
-        </svg>
-      </a>
+      
 
       {/* Instagram */}
       <a

@@ -3,6 +3,28 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 
+/* Base social link styling */
+.social-link {
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+/* Lift + glow on hover */
+.social-link:hover {
+  transform: translateY(-2px);
+}
+
+/* Instagram glow */
+.social-link.insta:hover {
+  filter: drop-shadow(0 0 6px rgba(214, 41, 118, 0.6))
+          drop-shadow(0 0 12px rgba(150, 47, 191, 0.5));
+}
+
+/* Gmail glow */
+.social-link.gmail:hover {
+  filter: drop-shadow(0 0 6px rgba(234, 67, 53, 0.6))
+          drop-shadow(0 0 12px rgba(234, 67, 53, 0.4));
+}
+
 /* ---------------- Buttons ---------------- */
 .btn {
     transition: all 0.3s ease;

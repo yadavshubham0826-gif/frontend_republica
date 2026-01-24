@@ -331,10 +331,115 @@ const Home = () => {
                   <FadeInSection delay={0.1}>
                     <div>
                       <h3>Get in Touch</h3>
-                      <p>Contact information placeholder. Add your department details here.</p>
-                      <p><strong>Email:</strong> department@college.edu</p>
-                      <p><strong>Phone:</strong> +91-XXX-XXXX-XXXX</p>
-                      <p><strong>Address:</strong> Republica, Political Science Association<br />Daulat Ram College, University Of Delhi, 4-Maurice Nagar,New Delhi-110007</p>
+                                           <a
+      
+      href="mailto:republica.psa.drc@gmail.com?subject=Inquiry%20from%20Website&body=Hello%20Republica%20Team,%0D%0A%0D%0AI%20am%20writing%20to%20inquire%20about%20your%20department.%0D%0A%0D%0ARegards,"
+      onClick={(e) => {
+        // Desktop → Gmail Web | Mobile → Mail app
+        if (window.innerWidth > 768) {
+          e.preventDefault();
+          window.open(
+            'https://mail.google.com/mail/?view=cm&fs=1&to=republica.psa.drc@gmail.com&su=Inquiry%20from%20Website&body=Hello%20Republica%20Team,%0D%0A%0D%0AI%20am%20writing%20to%20inquire%20about%20your%20department.%0D%0A%0D%0ARegards,',
+            '_blank'
+          );
+        }
+      }}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        fontWeight: '600'
+      }}
+    >
+      {/* Gmail icon */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        style={{ flexShrink: 0 }}
+      >
+        <path
+          d="M3 6.5L12 12.5L21 6.5"
+          stroke="#EA4335"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <rect
+          x="3"
+          y="5"
+          width="18"
+          height="14"
+          rx="2"
+          ry="2"
+          stroke="#EA4335"
+          strokeWidth="2"
+        />
+      </svg>
+
+      {/* Email text */}
+      <span style={{ color: '#000' }}>
+        republica.psa.drc@gmail.com
+      </span>
+    </a>
+  <p>
+  <strong>
+    <a
+    
+      href="https://www.instagram.com/republica_drc/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        fontWeight: '600',
+        background: 'linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent'
+      }}
+    >
+      {/* Instagram SVG */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
+        <defs>
+          <linearGradient id="instaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#feda75" />
+            <stop offset="25%" stopColor="#fa7e1e" />
+            <stop offset="50%" stopColor="#d62976" />
+            <stop offset="75%" stopColor="#962fbf" />
+            <stop offset="100%" stopColor="#4f5bd5" />
+          </linearGradient>
+        </defs>
+
+        <rect
+          x="2"
+          y="2"
+          width="20"
+          height="20"
+          rx="5"
+          ry="5"
+          stroke="url(#instaGradient)"
+          strokeWidth="2"
+        />
+        <circle cx="12" cy="12" r="4" stroke="url(#instaGradient)" strokeWidth="2" />
+        <circle cx="17" cy="7" r="1.2" fill="url(#instaGradient)" />
+      </svg>
+
+      republica_drc
+    </a>
+  </strong>
+</p>
+ <p><strong>Address:</strong> Republica, Political Science Association<br />Daulat Ram College, University Of Delhi, 4-Maurice Nagar,New Delhi-110007</p>
                     </div>
                   </FadeInSection>
                   <FadeInSection delay={0.2}>

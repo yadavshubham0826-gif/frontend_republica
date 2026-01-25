@@ -224,6 +224,48 @@ const Contact = () => {
     </a>
   </strong>
 </p>
+<p>
+  <strong>
+    <a
+      className="social-link linkedin"
+      href="https://www.linkedin.com/in/republica-drc/" // replace with your actual LinkedIn profile
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        fontWeight: '600',
+         fontSize: '18px',
+         
+      }}
+    >
+      {/* LinkedIn icon */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        style={{ flexShrink: 0 }}
+      >
+        <path
+          d="M4 4.5C4 5.328 3.328 6 2.5 6S1 5.328 1 4.5 1.672 3 2.5 3 4 3.672 4 4.5Z"
+          fill="#0077B5"
+        />
+        <path
+          d="M0 8h5v16H0V8Zm7 0h5v2h.07c.69-1.3 2.37-2.7 4.93-2.7 5.27 0 6.97 3.46 6.97 7.96V24h-5v-7.54c0-1.8-.03-4.1-2.5-4.1-2.5 0-2.88 1.95-2.88 3.96V24H7V8Z"
+          fill="#0077B5"
+        />
+      </svg>
+
+      {/* LinkedIn text */}
+      <span style={{ color: '#0077B5' }}>Republica DRC</span>
+    </a>
+  </strong>
+</p>
+
 
 
                 <hr style={{ margin: '20px 0', opacity: 0.3 }} />
@@ -233,7 +275,7 @@ const Contact = () => {
                   <strong>Republica Department of Political Science</strong><br />
                   Daulat Ram College<br />
                   University of Delhi<br />
-                  4, Patel Marg, Maurice Nagar<br />
+                  4 Maurice Nagar<br />
                   New Delhi - 110007
                 </p>
               </div>

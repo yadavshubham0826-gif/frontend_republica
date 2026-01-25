@@ -3,6 +3,92 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 
+
+.faculty-section-bordered {
+  border-top: 2px solid #000;
+  border-bottom: 2px solid #000;
+}
+
+.faculty-section-bordered .container {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.faculty-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem 2rem;
+}
+
+.faculty-list li {
+  border-bottom: none;
+}
+
+
+/* Academics page: full-width image section */
+.academics-hero ~ .home-hero-image-section {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  background: transparent;
+}
+
+.academics-image-section {
+  background: transparent !important;
+}
+
+.home-hero-image-section {
+  padding: 3rem 0 5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.image-frame {
+  position: relative;
+  max-width: 900px;
+  width: 92%;
+  border-radius: 28px;
+  padding: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0.1)
+  );
+  backdrop-filter: blur(12px);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.2);
+}
+
+.image-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.25),
+    rgba(0, 0, 0, 0)
+  );
+  pointer-events: none;
+}
+
+.home-hero-image {
+  width: 100%;
+  display: block;
+  border-radius: 20px;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.image-frame:hover .home-hero-image {
+  transform: scale(1.02);
+}
+
+/* LinkedIn glow */
+.social-link.linkedin:hover {
+  filter: drop-shadow(0 0 6px rgba(0, 119, 181, 0.6))
+          drop-shadow(0 0 12px rgba(0, 119, 181, 0.5));
+}
+
 /* Base social link styling */
 .social-link {
   transition: transform 0.25s ease, filter 0.25s ease;

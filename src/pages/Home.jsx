@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import FadeInSection from '../components/FadeInSection';
 import { useHeaderOffset } from '../hooks/useHeaderOffset';
 import { useColorPalette } from '../context/ColorContext.jsx'; 
-import { db } from '../firebase-config.js'; // Import Firestore instance
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Import Firestore functions
+import { db, storage } from '../firebase-config.js'; // Import Firestore instance
+import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
+import { ref, listAll, getDownloadURL } from 'firebase/storage';
 import '../styles/style.css';
 import '../styles/HomeGallery.css';
 import TeamCard from "./TeamCard";
@@ -75,21 +76,27 @@ const Home = () => {
     fetchAlbums();
   }, []);
 
-  // Extract all images from albums for slideshow
+  // Fetch slideshow images from Firebase Storage
   useEffect(() => {
-    const allImages = [];
-    galleryAlbums.forEach(album => {
-      if (album.imageUrls && Array.isArray(album.imageUrls)) {
-        album.imageUrls.forEach(image => {
-          if (image && image.url) {
-            allImages.push(image.url);
-          }
-        });
+    const fetchSlideshowImages = async () => {
+      try {
+        const slideshowFolderRef = ref(storage, 'slideshow');
+        const res = await listAll(slideshowFolderRef);
+        
+        // Take the first 8 items
+        const firstEightItems = res.items.slice(0, 8);
+
+        const urls = await Promise.all(
+          firstEightItems.map((itemRef) => getDownloadURL(itemRef))
+        );
+        setSlideshowImages(urls);
+      } catch (error) {
+        console.error("Error fetching slideshow images from Firebase Storage:", error);
       }
-    });
-    console.log('Extracted slideshow images:', allImages.length, allImages);
-    setSlideshowImages(allImages);
-  }, [galleryAlbums]);
+    };
+
+    fetchSlideshowImages();
+  }, []);
 
   // Update latest posts based on pagination
   useEffect(() => {
@@ -252,41 +259,25 @@ const Home = () => {
         </div>
       </div>
 
- <section id="academics" className="section">
+
+      {/* -------------------- E-LIBRARY SECTION -------------------- */}
+      <section id="e-library" className="section light">
         <div className="container">
           <FadeInSection>
-            <h2>Department Teachers</h2>
-          </FadeInSection>
-          <div className="grid three">
-            <FadeInSection delay={0.1}>
-              <article className="card person">
-                <div className="avatar" aria-hidden="true"></div>
-                <h3>Teacher Name</h3>
-                <p className="muted">Professor • Subject / Research Area</p>
-              </article>
-            </FadeInSection>
-            <FadeInSection delay={0.2}>
-              <article className="card person">
-                <div className="avatar" aria-hidden="true"></div>
-                <h3>Teacher Name</h3>
-                <p className="muted">Assistant Professor • Subject</p>
-              </article>
-            </FadeInSection>
-            <FadeInSection delay={0.3}>
-              <article className="card person">
-                <div className="avatar" aria-hidden="true"></div>
-                <h3>Teacher Name</h3>
-                <p className="muted">Lecturer • Subject</p>
-              </article>
-            </FadeInSection>
-          </div>
-          <FadeInSection delay={0.4}>
-            <div className="text-center">
-              <Link to="/academics" className="btn-rect-3d">View More</Link>
+            <h2 style={{ textAlign: 'center', color: "hsla(0, 18%, 4%, 1.00)", fontFamily: "Montserrat, sans-serif" }}>E-Library</h2>
+            <p style={{ textAlign: 'center', fontSize: '18px' }}>
+              Access our collection of previous year question papers and study materials.
+            </p>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <a href="https://drive.google.com/drive/folders/1Ys-ha5GznZjFtOlXUPuvJswT1c7aHnGU" className="btn-rect-3d" target="_blank" rel="noopener noreferrer">
+                Go to E-Library
+              </a>
             </div>
           </FadeInSection>
         </div>
       </section>
+
+
       {/* -------------------- GALLERY SECTION (FILM STRIP) -------------------- */}
       <section 
         id="gallery" 
@@ -439,7 +430,48 @@ const Home = () => {
     </a>
   </strong>
 </p>
- <p><strong>Address:</strong> Republica, Political Science Association<br />Daulat Ram College, University Of Delhi, 4-Maurice Nagar,New Delhi-110007</p>
+<p>
+  <strong>
+    <a
+      
+      href="https://www.linkedin.com/company/republica-the-political-science-department-daulat-ram-college/" // replace with your actual LinkedIn profile
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        textDecoration: 'none',
+        fontWeight: '600',
+         fontSize: '18px',
+         
+      }}
+    >
+      {/* LinkedIn icon */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        style={{ flexShrink: 0 }}
+      >
+        <path
+          d="M4 4.5C4 5.328 3.328 6 2.5 6S1 5.328 1 4.5 1.672 3 2.5 3 4 3.672 4 4.5Z"
+          fill="#0077B5"
+        />
+        <path
+          d="M0 8h5v16H0V8Zm7 0h5v2h.07c.69-1.3 2.37-2.7 4.93-2.7 5.27 0 6.97 3.46 6.97 7.96V24h-5v-7.54c0-1.8-.03-4.1-2.5-4.1-2.5 0-2.88 1.95-2.88 3.96V24H7V8Z"
+          fill="#0077B5"
+        />
+      </svg>
+
+      {/* LinkedIn text */}
+      <span style={{ color: '#0077B5' }}>Republica DRC</span>
+    </a>
+  </strong>
+</p>
+ <p><strong>Address:</strong> Republica, Political Science Association<br />Daulat Ram College, University Of Delhi, 4 Maurice Nagar,New Delhi-110007</p>
                     </div>
                   </FadeInSection>
                   <FadeInSection delay={0.2}>

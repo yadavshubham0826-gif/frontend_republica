@@ -21,7 +21,22 @@ const SocialMediaSidebar = () => {
           <path d="M20.447 20.452H16.89v-5.396c0-1.287-.026-2.944-1.796-2.944-1.797 0-2.071 1.402-2.071 2.851v5.489H9.465V9h3.41v1.561h.049c.476-.9 1.637-1.85 3.368-1.85 3.598 0 4.264 2.37 4.264 5.455v6.286zM5.337 7.433a1.988 1.988 0 1 1 0-3.975 1.988 1.988 0 0 1 0 3.975zM7.119 20.452H3.553V9h3.566v11.452z"/>
         </svg>
       </a>
-
+ {/* Facebook */}
+      <a
+        href="https://www.facebook.com/share/1MVv3pRqyQ/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Facebook Profile"
+        className="facebook-icon"
+      >
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24"
+          className="social-icon"
+        >
+          <path d="M22 12a10 10 0 1 0-11.5 9.87v-6.99H8.1V12h2.4V9.8c0-2.37 1.4-3.68 3.55-3.68 1.03 0 2.1.18 2.1.18v2.3h-1.18c-1.16 0-1.52.72-1.52 1.46V12h2.59l-.41 2.88h-2.18v6.99A10 10 0 0 0 22 12"/>
+        </svg>
+      </a>
       
 
       {/* Instagram */}

@@ -31,6 +31,11 @@ service firebase.storage {
       allow read: if true; // Anyone can read
       allow write: if isAdmin(); // Only admins can upload/delete
     }
+
+    // Slideshow images: Publicly readable
+    match /slideshow/{imageId} {
+      allow read, list: if true;
+    }
     
     // Default: Deny all other access
     match /{allPaths=**} {

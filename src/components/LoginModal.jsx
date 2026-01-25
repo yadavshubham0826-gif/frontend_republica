@@ -11,6 +11,15 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [showNote, setShowNote] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNote(false);
+    }, 15000); // 15 seconds
+
+    return () => clearTimeout(timer); // Cleanup the timer
+  }, []);
 
   const { login, isAuthenticated } = useUser();
 
@@ -222,6 +231,21 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
           <div className="login-modal-content">
             <h2 className="login-modal-title">Welcome Back</h2>
             <p className="login-modal-subtitle">Log in to continue to the website.</p>
+
+            {showNote && (
+              <div style={{ 
+                textAlign: 'center',
+                fontSize: '0.9rem',
+                color: 'red',
+                marginBottom: '1rem',
+                padding: '0.5rem',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '0.25rem',
+                border: '1px solid #dee2e6'
+              }}>
+                Note: First login or signup may take up to 1 minute. Please bear with us.
+              </div>
+            )}
 
             {error && <div className="error-message">{error}</div>}
 

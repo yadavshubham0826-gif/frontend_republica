@@ -1,3 +1,21 @@
-<svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg">
-  <path d="M0,40 C360,120 1080,0 1440,60 L1440,120 L0,120 Z" fill="white"></path>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 160" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="paintFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6f1ee" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f6f1ee"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M0,110
+       C60,130 120,90 180,105
+       C240,120 300,95 360,110
+       C420,125 480,100 540,115
+       C600,130 660,95 720,110
+       C780,125 840,100 900,115
+       C960,130 1020,95 1080,110
+       C1140,125 1200,100 1260,115
+       C1320,130 1380,110 1440,120
+       L1440,160 L0,160 Z"
+    fill="url(#paintFade)"
+  />
 </svg>

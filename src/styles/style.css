@@ -9,28 +9,66 @@
   position: relative;
   width: 100%;
   height: clamp(60vh, 80vh, 90vh);
-  background: #f6f1ee; /* background below the wave */
+  background: #f6f1ee; /* color below wave */
   overflow: hidden;
 }
-
 .home-hero-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
-
-/* Wave overlay at bottom */
 .home-hero-image-section::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  bottom: -1px; /* prevents thin white gap */
   left: 0;
+
   width: 100%;
-  height: 120px; /* adjust for wave size */
-  background: url('/wave.svg') no-repeat bottom;
-  background-size: cover;
+  height: 120px;
+
+  background-image: url("/wave.svg");
+  background-repeat: no-repeat;
+  background-position: bottom center;
+
+  /* 🔑 MOST IMPORTANT FIX */
+  background-size: 100% auto;
+
   pointer-events: none;
+  z-index: 2;
 }
+@media (max-width: 1024px) {
+  .home-hero-image-section::after {
+    height: 90px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-hero-image-section {
+    height: 70vh;
+  }
+
+  .home-hero-image-section::after {
+    height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero-image-section {
+    height: 65vh;
+  }
+
+  .home-hero-image-section::after {
+    height: 55px;
+    opacity: 0.98;
+  filter: blur(0.4px);
+  }
+}
+.home-hero-image-section::after {
+  opacity: 0.98;
+  filter: blur(0.4px);
+}
+
 
 
 .social-link:hover {
@@ -2175,4 +2213,16 @@ h2[id], h1[id] {
 .btn-rect-3d:active {
   transform: translateY(3px) !important;
   box-shadow: 0 2px 0 #000000 !important;
+}
+
+@media (max-width: 768px) {
+  .home-hero-image-section {
+    height: auto;
+    padding: 0;
+  }
+
+  .home-hero-image {
+    object-fit: contain;
+    max-height: 50vh;
+  }
 }

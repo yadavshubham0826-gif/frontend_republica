@@ -162,13 +162,23 @@ const Home = () => {
       </div>
 
       {/* -------------------- HERO IMAGE -------------------- */}
-      <section className="home-hero-image-section">
-        <img
-          src={heroImageUrl}
-          alt="Featured event"
-          className="home-hero-image"
-        />
-      </section>
+ <section className="home-hero-image-section">
+  <img
+    src={heroImageUrl}
+    alt="Featured event"
+    className="home-hero-image"
+  />
+
+  {/* Watercolor bleed */}
+  <img
+    src="/watercolor-bleed.png"
+    alt=""
+    className="watercolor-bleed"
+    aria-hidden="true"
+  />
+</section>
+
+
 
 
 

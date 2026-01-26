@@ -3,6 +3,33 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 
+.home-hero-image-section {
+  position: relative;
+  width: 100%;
+  height: clamp(60vh, 80vh, 90vh);
+  background: #f6f1ee; /* background below the wave */
+  overflow: hidden;
+}
+
+.home-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Wave overlay at bottom */
+.home-hero-image-section::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px; /* adjust for wave size */
+  background: url('/wave.svg') no-repeat bottom;
+  background-size: cover;
+  pointer-events: none;
+}
+
 
 .social-link:hover {
   filter: drop-shadow(0 0 6px currentColor);

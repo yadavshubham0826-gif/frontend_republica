@@ -151,14 +151,14 @@ const Home = () => {
         className="home-heading-container" 
         style={{ 
           background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(to bottom right, #9db2a2 0%, #c1c7b1 50%, #e2d1c3 100%)", 
-          padding: "20px 0",
+          padding: "30px 0",
           color: "#fff",
           textAlign: "center"
         }}
       >
-        <h1 className="home-heading-main" style={{ color: '#ffffff' }}>REPUBLICA</h1>
-        <p className="home-heading-sub">Political Science Association</p>
-        <p className="home-heading-college">Daulat Ram College, University Of Delhi</p>
+        <h1 className="home-heading-main" style={{ color: '#ffffff' }}><strong>REPUBLICA</strong></h1>
+        <p className="home-heading-sub"><strong>Political Science Association</strong></p>
+        <p className="home-heading-college"><strong>Daulat Ram College, University Of Delhi</strong></p>
       </div>
 
       {/* -------------------- HERO IMAGE -------------------- */}

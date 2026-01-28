@@ -85,7 +85,9 @@ const Contact = () => {
       />
 
       {/* HERO */}
-      <section className="page-hero" style={{ background: gradient }}>
+      <section className="page-hero" style={{ background: gradient,
+        padding: "10px 0"
+       }}>
         <div className="container">
           <FadeInSection>
             <h1>Contact Us</h1>

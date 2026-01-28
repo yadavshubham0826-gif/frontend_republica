@@ -36,6 +36,7 @@ const Academics = () => {
     )`,
     color: '#ffffff',
     textShadow: '0px 1px 3px rgba(0, 0, 0, 0.15)',
+    padding: "90px 0"
   }}
 >
   <div className="container narrow">
@@ -61,7 +62,7 @@ const Academics = () => {
           textAlign: "center",
           margin: "0 auto",
           color: 'inherit',
-        }}
+                  }}
       >
         Excellence in teaching, research, and academic resources.
         Explore our faculty and access the E-Library for previous year

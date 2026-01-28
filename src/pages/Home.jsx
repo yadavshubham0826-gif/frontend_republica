@@ -150,8 +150,8 @@ const Home = () => {
       <div 
         className="home-heading-container" 
         style={{ 
-          background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))", 
-          padding: "60px 0",
+          background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(to bottom right, #9db2a2 0%, #c1c7b1 50%, #e2d1c3 100%)", 
+          padding: "20px 0",
           color: "#fff",
           textAlign: "center"
         }}
@@ -166,10 +166,12 @@ const Home = () => {
 <section className="home-hero-image-section">
   <img
     src={heroImageUrl}
-    alt="Featured event"
+    alt="Hero"
     className="home-hero-image"
+    loading="eager"
   />
 </section>
+
 
       {/* -------------------- ABOUT SECTION -------------------- */}
 
@@ -206,7 +208,7 @@ const Home = () => {
       <div 
         id="blog"
         className="home-blog-section" 
-        style={{ background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))" }}
+        style={{ background: !loading && palette?.gradient ? palette.gradient : "linear-gradient(to bottom right, #9db2a2 0%, #c1c7b1 50%, #e2d1c3 100%)", color: "#ffffff", textShadow: "0px 1px 3px rgba(0, 0, 0, 0.15)" }}
       >
         <div className="container">
           <FadeInSection>
@@ -310,8 +312,8 @@ const Home = () => {
             <p>No albums to display yet.</p>
           )}
         </div>
-              </section>
-      //Contact Us Section//
+      </section>
+      {/* Contact Us Section */}
       <section id="contact" className="section light">
               <div className="container text-center">
                 <FadeInSection>
@@ -519,7 +521,7 @@ const Home = () => {
                 </div>
               </div>
             </section>
-                           </main>
+    </main>
   );
 };
 

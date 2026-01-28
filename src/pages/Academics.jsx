@@ -25,45 +25,52 @@ const Academics = () => {
     <main id="main-content" ref={mainRef}>
       {/* HERO SECTION */}
 
-      <section
-        className="page-hero academics-hero"
+  <section
+  className="page-hero academics-hero"
+  style={{
+    background: palette?.gradient || `linear-gradient(
+      to bottom right, 
+      #9db2a2 0%,   /* Sage */
+      #c1c7b1 50%,  /* Olive tint */
+      #e2d1c3 100%  /* Warm Tan */
+    )`,
+    color: '#ffffff',
+    textShadow: '0px 1px 3px rgba(0, 0, 0, 0.15)',
+  }}
+>
+  <div className="container narrow">
+    <FadeInSection>
+      <h1
         style={{
-          background:
-            !loading && gradient
-              ? gradient
-              : "linear-gradient(135deg, rgb(139, 21, 56), rgb(139, 115, 85))",
+          fontSize: "clamp(2.6rem, 4vw, 4rem)",
+          letterSpacing: "-1px",
+          marginBottom: "1rem",
+          textAlign: "center",
+          color: 'inherit',
         }}
       >
-       <div className="container narrow">
-  <FadeInSection>
-    <h1
-      style={{
-        fontSize: "clamp(2.6rem, 4vw, 4rem)",
-        letterSpacing: "-1px",
-        marginBottom: "1rem",
-        textAlign: "center",
-      }}
-    >
-      Academics
-    </h1>
+        Academics
+      </h1>
 
-    <p
-      style={{
-        fontSize: "15px",
-        lineHeight: "1.7",
-        maxWidth: "620px",
-        opacity: 0.9,
-        textAlign: "center",
-        margin: "0 auto",
-      }}
-    >
-      Excellence in teaching, research, and academic resources.
-      Explore our faculty and access the E-Library for previous year
-      question papers and study materials.
-    </p>
-  </FadeInSection>
-</div>
+      <p
+        style={{
+          fontSize: "15px",
+          lineHeight: "1.7",
+          maxWidth: "620px",
+          opacity: 0.9,
+          textAlign: "center",
+          margin: "0 auto",
+          color: 'inherit',
+        }}
+      >
+        Excellence in teaching, research, and academic resources.
+        Explore our faculty and access the E-Library for previous year
+        question papers and study materials.
+      </p>
+    </FadeInSection>
+  </div>
 </section>
+
 
       {/* FACULTY SECTION */}
       <section id="faculty" className="section light">
@@ -99,12 +106,12 @@ const Academics = () => {
       </section>
 
       {/* IMAGE SECTION */}
-      <section className="home-hero-image-section academics-image-section">
-        <div className="image-frame">
+      <section className="akad">
+        <div className="imgroot">
           <img
             src={heroImageUrl}
             alt="Academics"
-            className="home-hero-image"
+            className="akadimg"
           />
         </div>
       </section>

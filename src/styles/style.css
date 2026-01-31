@@ -946,6 +946,9 @@ h2[id], h1[id] {
 
 /* New Homepage Blog Section Styles */
 .home-blog-section {
+    position: relative;
+    z-index: 1; 
+    overflow: hidden;
     padding: 20px 0; /* Further tightened section padding */
     color: #fff;
 }
@@ -955,6 +958,8 @@ h2[id], h1[id] {
     font-size: 32px; /* Set to a consistent heading size */
     margin-bottom: 0.75rem; /* Further tightened margin below heading */
     font-weight: 700;
+    position: relative;
+    z-index: 100;
 }
 
 .home-blog-grid-container {
@@ -964,6 +969,8 @@ h2[id], h1[id] {
     gap: 20px;
     justify-content: center;
     margin: 0 auto;
+    position: relative;
+    z-index: 100;
 }
 
 .home-blog-card-link {
@@ -1018,6 +1025,34 @@ h2[id], h1[id] {
     justify-content: space-between;
     color: #fff;
     font-size: 0.8rem; /* Further reduced footer font size */
+}
+.home-blog-bg canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1; /* Sits above the background gradient */
+}
+.home-blog-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+/* --- CONTINUATION BLEND EFFECT --- */
+.blog-bg-mask {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 150px; /* Adjust height for a longer or shorter fade */
+    /* Fades the purple/gradient into the next section's white background */
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #ffffff);
+    z-index: 1;
+    pointer-events: none;
 }
 
 .footer-stat {

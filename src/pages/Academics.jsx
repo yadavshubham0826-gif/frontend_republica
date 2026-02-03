@@ -196,13 +196,14 @@ const Academics = () => {
         <div className="container">
           <FadeInSection>
             <h2 style={{ textAlign: 'center', color: "hsla(0, 18%, 4%, 1.00)", fontFamily: "Montserrat, sans-serif" }}>E-Library</h2>
-            <p style={{ textAlign: 'center', fontSize: '18px' }}>
-              Access our collection of previous year question papers and study materials.
+            <p style={{ textAlign: 'center', fontSize: '18px', marginBottom: '20px' }}>
+              Access our collection of previous year question papers and study materials directly below.
             </p>
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <a href="https://drive.google.com/drive/folders/1Ys-ha5GznZjFtOlXUPuvJswT1c7aHnGU" className="btn-rect-3d" target="_blank" rel="noopener noreferrer">
-                Go to E-Library
-              </a>
+            <div className="embedded-drive-container">
+              <iframe 
+                src="https://drive.google.com/embeddedfolderview?id=1Ys-ha5GznZjFtOlXUPuvJswT1c7aHnGU#grid" 
+                allow="autoplay"
+              ></iframe>
             </div>
           </FadeInSection>
         </div>

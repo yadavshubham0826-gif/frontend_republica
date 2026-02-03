@@ -11,6 +11,8 @@ import '../styles/HomeGallery.css';
 import TeamCard from "./TeamCard";
 import ImageSlideshow from "../components/ImageSlideshow";
 import React from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 const Home = () => {
   const [allPosts, setAllPosts] = useState([]);
   const [latestPosts, setLatestPosts] = useState([]);
@@ -262,37 +264,132 @@ const Home = () => {
 
 
       {/* -------------------- E-LIBRARY SECTION -------------------- */}
-      <section id="e-library" className="section light">
-        <div className="container">
-          <FadeInSection>
-            <h2 style={{ textAlign: 'center', color: "hsla(0, 18%, 4%, 1.00)", fontFamily: "Montserrat, sans-serif" }}>E-Library</h2>
-            <p style={{ textAlign: 'center', fontSize: '18px' }}>
-              Access our collection of previous year question papers and study materials.
-            </p>
-            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-              <a href="https://drive.google.com/drive/folders/1Ys-ha5GznZjFtOlXUPuvJswT1c7aHnGU" className="btn-rect-3d" target="_blank" rel="noopener noreferrer">
-                Go to E-Library
-              </a>
-            </div>
-          </FadeInSection>
-        </div>
-      </section>
+<section
+  id="e-library"
+  className="section"
+  style={{
+    // Soft Mint & Slate Gradient base
+    background: 'linear-gradient(135deg, #a8e6cf 0%, #dcedc1 50%, #83c5be 100%)',
+    position: 'relative',
+    padding: '20px 0',
+    overflow: 'hidden', // This hides the parts of the curves that go off-screen
+  }}
+>
+  {/* --- BACKGROUND DECORATIVE CURVES (Blobs) --- */}
+  {/* These replace the visual interest of the SVG with soft, modern depth */}
+  <div style={{
+    position: 'absolute',
+    width: '700px',
+    height: '700px',
+    background: 'rgba(0, 210, 255, 0.3)',
+    borderRadius: '43% 57% 70% 30% / 30% 45% 55% 70%',
+    top: '-200px',
+    right: '-100px',
+    filter: 'blur(90px)',
+    zIndex: 0
+  }}></div>
+
+  <div style={{
+    position: 'absolute',
+    width: '500px',
+    height: '500px',
+    background: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: '50% 50% 30% 70% / 50% 30% 70% 50%',
+    bottom: '-150px',
+    left: '-50px',
+    filter: 'blur(80px)',
+    zIndex: 0
+  }}></div>
+
+  {/* --- CONTENT --- */}
+  {/* We keep zIndex: 1 here to ensure text stays above the blurred background */}
+  <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+    <FadeInSection>
+      <h2 style={{ 
+        textAlign: 'center', 
+        color: "#2d5a57", 
+        fontFamily: "Montserrat, sans-serif",
+        fontWeight: 'bold',
+        fontSize: '2.5rem'
+      }}>
+        E-Library
+      </h2>
+      <p style={{ textAlign: 'center', fontSize: '18px', color: '#4a7a76', maxWidth: '600px', margin: '0 auto' }}>
+        Access our collection of previous year question papers and study materials.
+      </p>
+      <div style={{ textAlign: 'center', marginTop: '30px' }}>
+        <a
+          href="https://drive.google.com/drive/folders/1Ys-ha5GznZjFtOlXUPuvJswT1c7aHnGU"
+          className="btn-rect-3d"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+        >
+          Go to E-Library <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+        </a>
+      </div>
+    </FadeInSection>
+  </div>
+</section>
 
 
-      {/* -------------------- GALLERY SECTION (FILM STRIP) -------------------- */}
-      <section 
-        id="gallery" 
-        className="section"
+
+
+      {/* -------------------- GALLERY HEADING SECTION -------------------- */}
+ <section 
+  className="section" 
+  style={{ 
+    background: 'linear-gradient(180deg, #FFFFFF 0%, #FAF9F6 100%)', 
+    padding: '6px 0 12px'
+  }}
+>
+  <div className="container text-center">
+    <FadeInSection>
+      <h2 
+        className="home-gallery-heading" 
+        style={{ color: 'var(--text, #333)', fontSize: '32px', margin: '0 0 8px' }}
+      >
+        Gallery
+      </h2>
+      <p 
         style={{ 
-          background: !loading && palette?.gradient ? palette.gradient : "#f0f4f8",
-          color: '#ffffff'
+          fontSize: "18px", 
+          lineHeight: "1.6", 
+          color: '#666', 
+          textShadow: '1px 1px 2px rgba(0,0,0,0.1)', 
+          maxWidth: '700px', 
+          margin: '0 auto 12px' 
         }}
       >
-        <div className="home-gallery-container text-center">
-          <FadeInSection>
-            <h2 className="home-gallery-heading">Gallery</h2>
-          </FadeInSection>
-
+        Explore moments from our past events, workshops, and gatherings. This page showcases a comprehensive collection of our society's activities.
+      </p>
+      <Link
+        to="/gallery"
+        className="btn-rect-3d"
+        style={{ 
+          marginBottom: "16px", 
+          display: "inline-flex", 
+          alignItems: "center", 
+          gap: "6px" 
+        }}
+      >
+        Gallery <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+      </Link>
+    </FadeInSection>
+  </div>
+</section>
+      {/* -------------------- GALLERY SECTION (FILM STRIP) -------------------- */}
+      <section
+        id="gallery"
+        className="section"
+        style={{
+          background: !loading && palette?.gradient ? palette.gradient : "#f0f4f8",
+          color: '#ffffff',
+          paddingTop: "24px",
+          paddingBottom: "8px"
+        }}
+      >
+        <div className="home-gallery-container">
           {loadingAlbums ? (
             <p>Loading albums...</p>
           ) : galleryAlbums.length > 0 ? (

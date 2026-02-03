@@ -114,6 +114,22 @@ const Home = () => {
     return match ? match[1] : null;
   };
 
+  const formatBlogDate = (value) => {
+    if (!value) return "";
+    let date;
+    if (typeof value?.toDate === "function") {
+      date = value.toDate();
+    } else if (typeof value?.seconds === "number") {
+      date = new Date(value.seconds * 1000);
+    } else {
+      date = new Date(value);
+    }
+    if (Number.isNaN(date.getTime())) return "";
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const day = date.getDate();
+    return `${month} | ${day}`;
+  };
+
   // Handle like clicks
   const handleLikeClick = (e, postId) => {
     e.preventDefault();
@@ -158,9 +174,12 @@ const Home = () => {
           textAlign: "center"
         }}
       >
-        <h1 className="home-heading-main" style={{ color: '#ffffff' }}><strong>REPUBLICA</strong></h1>
-        <p className="home-heading-sub"><strong>Political Science Association</strong></p>
-        <p className="home-heading-college"><strong>Daulat Ram College, University Of Delhi</strong></p>
+        <div className="home-heading-stack">
+          <h1 className="home-heading-main">REPUBLICA</h1>
+          <div className="home-heading-divider" aria-hidden="true"></div>
+          <p className="home-heading-sub">Political Science Association</p>
+          <p className="home-heading-college">Daulat Ram College, University Of Delhi</p>
+        </div>
       </div>
 
       {/* -------------------- HERO IMAGE -------------------- */}
@@ -177,7 +196,7 @@ const Home = () => {
 
       {/* -------------------- ABOUT SECTION -------------------- */}
 
-      <section id="about" className="section">
+      <section id="about" className="section about-section">
         <div className="container">
           <div className="about-slideshow-wrapper">
             <FadeInSection delay={0.1}>
@@ -230,7 +249,48 @@ const Home = () => {
                         style={{ backgroundImage: `url(${getFirstImage(post.content) || heroImageUrl})` }}
                       >
                         <div className="home-blog-card-overlay">
-                          <h3>{post.title}</h3>
+                          <div className="home-blog-date">{formatBlogDate(post.date)}</div>
+                          <h3 className="home-blog-title">{post.title}</h3>
+                          <div className="home-blog-author">- {post.author || "Unknown"}</div>
+                          <div className="home-blog-stats">
+                            <span className="home-blog-stat">
+                              <svg
+                                className="home-blog-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="#e74c3c"
+                                stroke="#e74c3c"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                              </svg>
+                              <span className="home-blog-stat-text">{post.likes || 0}</span>
+                            </span>
+                            <span className="home-blog-stat">
+                              <svg
+                                className="home-blog-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                              </svg>
+                              <span className="home-blog-stat-text">{post.views || 0}</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </Link>
@@ -337,7 +397,7 @@ const Home = () => {
 
       {/* -------------------- GALLERY HEADING SECTION -------------------- */}
  <section 
-  className="section" 
+  className="section home-gallery-cta" 
   style={{ 
     background: 'linear-gradient(180deg, #FFFFFF 0%, #FAF9F6 100%)', 
     padding: '6px 0 12px'
@@ -610,7 +670,7 @@ const Home = () => {
                     <div className="card">
                       <h3>Send Message</h3>
                       <p> Have questions or want to learn more about our department? We'd love to hear from you.</p>
-                      <Link to="/contact#message-form" className="btn">
+                      <Link to="/contact#message-form" className="btn btn-contact-cta">
         Send a Message
       </Link>
                     </div>

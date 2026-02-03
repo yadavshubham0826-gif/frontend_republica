@@ -14,8 +14,10 @@
 .slideshow-wrapper {
   position: relative;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 22px;
   background: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  height: clamp(260px, 38vw, 360px);
 
   /* modern soft elevation */
   box-shadow:
@@ -48,6 +50,18 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  filter: saturate(1.06) contrast(1.02);
+}
+
+/* subtle highlight for a premium card feel */
+.slideshow-wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.45), transparent 55%);
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* ================================

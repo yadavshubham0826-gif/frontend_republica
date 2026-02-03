@@ -35,6 +35,8 @@ const Header = () => {
   const { user, logout, isAuthenticated } = useUser();
   const isUserAdmin = user && user.role === 'admin'; // <-- New admin check
   const username = user?.name || user?.displayName || 'User';
+  const avatarUrl = user?.photoURL || user?.avatar || user?.photo || user?.image || user?.picture || null;
+  const userInitial = (username || 'U').trim().charAt(0).toUpperCase();
   const userDropdownRef = useRef(null);
   const academicsDropdownRef = useRef(null); // Ref for Academics dropdown
   const janmatDropdownRef = useRef(null); // Ref for Janmat dropdown
@@ -237,6 +239,13 @@ const Header = () => {
                   className={`user-menu dropdown ${isUserDropdownOpen ? 'show' : ''}`}
                   ref={userDropdownRef}
                 >
+                    <span className="user-avatar user-avatar-outside">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={username} />
+                      ) : (
+                        <span className="user-avatar-fallback">{userInitial}</span>
+                      )}
+                    </span>
                     <button
                       onClick={(e) => {
                         setIsUserDropdownOpen(!isUserDropdownOpen);
@@ -245,7 +254,7 @@ const Header = () => {
                       aria-haspopup="true"
                       aria-expanded={isUserDropdownOpen}
                     >
-                      {username}
+                      <span className="user-name-text" title={username}>{username}</span>
                       <span className="dropdown-arrow" style={{ transform: isUserDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                     </button> 
                   <ul className={`dropdown-menu ${isUserDropdownOpen ? 'show' : ''}`}>
@@ -352,3 +361,4 @@ const Header = () => {
 };
 
 export default Header;
+

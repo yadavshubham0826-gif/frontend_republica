@@ -41,6 +41,21 @@ service cloud.firestore {
 
         // DELETE: Only an admin can delete a comment.
         allow delete: if isAdmin();
+
+        // --- Replies Subcollection Rules ---
+        match /replies/{replyId} {
+          // READ: Anyone can read replies.
+          allow read: if true;
+
+          // CREATE: Any logged-in user can create a reply.
+          allow create: if isSignedIn();
+
+        // UPDATE: No client-side updates (reserved for server).
+        allow update: if false;
+
+          // DELETE: Only an admin can delete a reply.
+          allow delete: if isAdmin();
+        }
       }
     }
 

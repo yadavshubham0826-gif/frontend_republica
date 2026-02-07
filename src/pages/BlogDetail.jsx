@@ -29,6 +29,13 @@ const BlogDetail = () => {
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [notification, setNotification] = useState({ message: null, type: '' });
   const [showAuthModal, setShowAuthModal] = useState(false); // For the login prompt modal
+  const [showDeleteReplyModal, setShowDeleteReplyModal] = useState(false);
+  const [replyToDelete, setReplyToDelete] = useState({ commentId: null, replyId: null });
+  const [replyDrafts, setReplyDrafts] = useState({});
+  const [replyVisibility, setReplyVisibility] = useState({});
+  const [repliesByComment, setRepliesByComment] = useState({});
+  const [repliesLoading, setRepliesLoading] = useState({});
+  const [replyVisibleCount, setReplyVisibleCount] = useState({});
 
   const isUserAdmin = user && user.role === 'admin';
 
@@ -109,7 +116,11 @@ const BlogDetail = () => {
       const commentsRef = collection(db, "blogs", post.id, "comments");
       const q = query(commentsRef, orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
-      const commentsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const commentsData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        repliesCount: doc.data().repliesCount ?? 0
+      }));
       setComments(commentsData);
     } catch (err) {
     } finally {
@@ -184,6 +195,11 @@ const BlogDetail = () => {
   const handleDeleteComment = (commentId) => {
     setCommentToDelete(commentId);
     setShowDeleteModal(true);
+  };
+
+  const handleDeleteReplyRequest = (commentId, replyId) => {
+    setReplyToDelete({ commentId, replyId });
+    setShowDeleteReplyModal(true);
   };
 
   const onConfirmDelete = async () => {
@@ -276,6 +292,190 @@ const BlogDetail = () => {
     } catch (err) {
       console.error("Error liking comment:", err);
       fetchComments(); // Refetch comments to sync with the server state on error
+    }
+  };
+
+  const fetchReplies = async (commentId) => {
+    if (!post) return;
+    setRepliesLoading((prev) => ({ ...prev, [commentId]: true }));
+    try {
+      const repliesRef = collection(db, "blogs", post.id, "comments", commentId, "replies");
+      const q = query(repliesRef, orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      const repliesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setRepliesByComment((prev) => ({ ...prev, [commentId]: repliesData }));
+    } catch (err) {
+    } finally {
+      setRepliesLoading((prev) => ({ ...prev, [commentId]: false }));
+    }
+  };
+
+  const handleToggleReplies = (commentId) => {
+    setReplyVisibility((prev) => {
+      const nextOpen = !prev[commentId];
+      if (nextOpen && !repliesByComment[commentId]) {
+        fetchReplies(commentId);
+      }
+      return { ...prev, [commentId]: nextOpen };
+    });
+    setReplyVisibleCount((prev) => ({
+      ...prev,
+      [commentId]: 3,
+    }));
+  };
+
+  const handleReplyDraftChange = (commentId, value) => {
+    setReplyDrafts((prev) => ({ ...prev, [commentId]: value }));
+  };
+
+  const handleReplySubmit = async (commentId) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    const draft = (replyDrafts[commentId] || "").trim();
+    if (!draft) {
+      setNotification({ message: 'Please enter a reply.', type: 'error' });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-reply`, {
+        method: "POST",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blogId: post.id,
+          commentId,
+          author: username || commentAuthor || "Anonymous",
+          text: draft,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to post reply.');
+      }
+
+      setReplyDrafts((prev) => ({ ...prev, [commentId]: "" }));
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId
+            ? { ...c, repliesCount: (c.repliesCount || 0) + 1 }
+            : c
+        )
+      );
+      fetchReplies(commentId);
+      setReplyVisibility((prev) => ({ ...prev, [commentId]: true }));
+    } catch (err) {
+      setNotification({ message: err.message || "Failed to post reply.", type: 'error' });
+    }
+  };
+
+  const handleLoadMoreReplies = (commentId) => {
+    setReplyVisibleCount((prev) => ({
+      ...prev,
+      [commentId]: (prev[commentId] ?? 3) + 3,
+    }));
+  };
+
+  const handleReplyLike = async (commentId, replyId) => {
+    const replies = repliesByComment[commentId] || [];
+    const reply = replies.find(r => r.id === replyId);
+    if (!reply) return;
+
+    const isAlreadyLikedByUser = user && reply.likedBy?.some(liker => liker.uid === user.uid);
+    const anonymousReplyLikes = JSON.parse(localStorage.getItem('anonymousReplyLikes') || '[]');
+    const replyLikeKey = `${commentId}:${replyId}`;
+    const isAlreadyLikedAnonymously = !user && anonymousReplyLikes.includes(replyLikeKey);
+    const isAlreadyLiked = isAlreadyLikedByUser || isAlreadyLikedAnonymously;
+
+    const action = isAlreadyLiked ? 'unlike' : 'like';
+
+    // Optimistic UI update
+    setRepliesByComment((prev) => {
+      const current = prev[commentId] || [];
+      const updated = current.map((r) => {
+        if (r.id === replyId) {
+          const newLikes = (r.likes || 0) + (action === 'like' ? 1 : -1);
+          let newLikedBy = r.likedBy || [];
+
+          if (user) {
+            if (action === 'like') {
+              newLikedBy = [...newLikedBy, { uid: user.uid, role: user.role }];
+            } else {
+              newLikedBy = newLikedBy.filter(liker => liker.uid !== user.uid);
+            }
+          }
+
+          return { ...r, likes: newLikes, likedBy: newLikedBy };
+        }
+        return r;
+      });
+      return { ...prev, [commentId]: updated };
+    });
+
+    if (!user) {
+      const newAnonymousReplyLikes = action === 'like'
+        ? [...anonymousReplyLikes, replyLikeKey]
+        : anonymousReplyLikes.filter(id => id !== replyLikeKey);
+      localStorage.setItem('anonymousReplyLikes', JSON.stringify(newAnonymousReplyLikes));
+    }
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/like-reply`, {
+        method: "POST",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blogId: post.id, commentId, replyId, action }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Server failed to process the like.');
+      }
+    } catch (err) {
+      console.error("Error liking reply:", err);
+      fetchReplies(commentId);
+    }
+  };
+
+  const onConfirmDeleteReply = async () => {
+    if (!post || !replyToDelete.commentId || !replyToDelete.replyId) return;
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/delete-reply`, {
+        method: "POST",
+        credentials: 'include',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blogId: post.id,
+          commentId: replyToDelete.commentId,
+          replyId: replyToDelete.replyId,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete reply.');
+      }
+
+      setRepliesByComment((prev) => ({
+        ...prev,
+        [replyToDelete.commentId]: (prev[replyToDelete.commentId] || []).filter((r) => r.id !== replyToDelete.replyId),
+      }));
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === replyToDelete.commentId
+            ? { ...c, repliesCount: Math.max(0, (c.repliesCount || 0) - 1) }
+            : c
+        )
+      );
+    } catch (err) {
+      setNotification({ message: err.message || "Failed to delete reply.", type: 'error' });
+    } finally {
+      setShowDeleteReplyModal(false);
+      setReplyToDelete({ commentId: null, replyId: null });
     }
   };
 
@@ -394,6 +594,10 @@ const BlogDetail = () => {
 
                   const isAdminComment = comment.authorRole === 'admin';
                   const isAdminLiked = comment.likedBy?.some(liker => liker.role === 'admin') || false;
+                  const isRepliesOpen = !!replyVisibility[comment.id];
+                  const replies = repliesByComment[comment.id] || [];
+                  const visibleCount = replyVisibleCount[comment.id] ?? 3;
+                  const visibleReplies = replies.slice(0, visibleCount);
 
                   return (
                     <div
@@ -442,6 +646,12 @@ const BlogDetail = () => {
                             )}
                             {comment.likes || 0}
                           </button>
+                          <button
+                            className="reply-toggle-btn"
+                            onClick={() => handleToggleReplies(comment.id)}
+                          >
+                            Replies ({comment.repliesCount || 0})
+                          </button>
                           {isUserAdmin && (
                               <button
                                 className="delete-comment-btn"
@@ -457,6 +667,106 @@ const BlogDetail = () => {
                           Liked By Admin
                         </span>
                       )}
+
+                      {isRepliesOpen && (
+                        <div className="reply-section">
+                          <div className="reply-form">
+                            <textarea
+                              placeholder="Write a reply..."
+                              value={replyDrafts[comment.id] || ""}
+                              onChange={(e) => handleReplyDraftChange(comment.id, e.target.value)}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleReplySubmit(comment.id)}
+                            >
+                              Post Reply
+                            </button>
+                          </div>
+
+                          <div className="reply-list">
+                            {repliesLoading[comment.id] && <p>Loading replies...</p>}
+                            {!repliesLoading[comment.id] && replies.length === 0 && (
+                              <p className="reply-empty">No replies yet.</p>
+                            )}
+                            {!repliesLoading[comment.id] && visibleReplies.map((reply) => {
+                              const isAdminReply = reply.authorRole === 'admin';
+                              const isAdminReplyLiked = reply.likedBy?.some(liker => liker.role === 'admin') || false;
+                              const isReplyLikedByUser = user && reply.likedBy?.some(liker => liker.uid === user.uid);
+                              return (
+                                <div
+                                  key={reply.id}
+                                  className={`reply-item ${isAdminReply ? "admin-comment" : ""} ${isAdminReplyLiked ? "admin-liked-reply" : ""}`}
+                                >
+                                  <strong>{reply.author}</strong>
+                                  <p>{reply.text}</p>
+                                  <div className="reply-footer">
+                                    <span>{formatDate(reply.createdAt)}</span>
+                                    <button
+                                      className="like-btn reply-like-btn"
+                                      onClick={() => handleReplyLike(comment.id, reply.id)}
+                                      disabled={false}
+                                    >
+                                      {isReplyLikedByUser ? (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="18"
+                                          height="18"
+                                          viewBox="0 0 24 24"
+                                          fill="#3498db"
+                                          stroke="#3498db"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                        </svg>
+                                      ) : (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="18"
+                                          height="18"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                        </svg>
+                                      )}
+                                      {reply.likes || 0}
+                                    </button>
+                                    {isUserAdmin && (
+                                      <button
+                                        className="delete-comment-btn"
+                                        onClick={() => handleDeleteReplyRequest(comment.id, reply.id)}
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </div>
+                                  {isAdminReplyLiked && (
+                                    <span className="admin-liked-badge reply-liked-badge">
+                                      Liked By Admin
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {!repliesLoading[comment.id] && replies.length > visibleCount && (
+                            <button
+                              className="reply-load-more"
+                              onClick={() => handleLoadMoreReplies(comment.id)}
+                            >
+                              Load more replies
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -471,6 +781,15 @@ const BlogDetail = () => {
           confirmText="Delete"
         >
           <p>Are you sure you want to delete this comment?</p>
+        </ConfirmModal>
+        <ConfirmModal
+          isOpen={showDeleteReplyModal}
+          onClose={() => setShowDeleteReplyModal(false)}
+          onConfirm={onConfirmDeleteReply}
+          title="Confirm Deletion"
+          confirmText="Delete"
+        >
+          <p>Are you sure you want to delete this reply?</p>
         </ConfirmModal>
       </div>
     </main>

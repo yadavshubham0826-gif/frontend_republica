@@ -240,6 +240,19 @@ html, body {
   gap: 1rem;
 }
 
+.reply-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.reply-toggle-btn:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
 .like-btn {
   display: flex;
   align-items: center;
@@ -278,4 +291,112 @@ html, body {
   font-size: 0.75rem;
   font-weight: bold;
   color: #d32f2f; /* Red text color */
+}
+
+/* Replies */
+.reply-section {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 2px solid #eee;
+}
+
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.reply-form textarea {
+  width: 100%;
+  min-height: 70px;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.reply-form button {
+  align-self: flex-end;
+  padding: 0.45rem 1rem;
+  background-color: #333;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reply-form button:hover {
+  background-color: #555;
+}
+
+.reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reply-item {
+  position: relative;
+  background: #fafafa;
+  padding: 0.75rem;
+  padding-right: 3.5rem; /* space for the like button */
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.reply-item p {
+  margin: 0.4rem 0;
+}
+
+.reply-item span {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.reply-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reply-like-btn {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.4rem;
+}
+
+.reply-item.admin-liked-reply {
+  background-color: #f0fff4; /* Light green background */
+  border: 1px solid #a7e9af; /* Subtle light green border */
+  padding-bottom: 2rem;
+}
+
+.reply-liked-badge {
+  position: absolute;
+  bottom: 0.4rem;
+  left: 0.8rem;
+  font-size: 0.7rem;
+}
+.reply-empty {
+  color: #777;
+  font-style: italic;
+}
+
+.reply-load-more {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.reply-load-more:hover {
+  color: #000;
 }

@@ -1082,8 +1082,20 @@ app.post('/api/delete-comment', ensureAdmin, async (req, res) => {
   }
 
   try {
+    const commentRef = db.collection('blogs').doc(blogId).collection('comments').doc(commentId);
+
+    // Delete all replies under this comment (if any)
+    const repliesSnap = await commentRef.collection('replies').get();
+    if (!repliesSnap.empty) {
+      const batch = db.batch();
+      repliesSnap.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+    }
+
     // Delete the comment document from Firestore
-    await db.collection('blogs').doc(blogId).collection('comments').doc(commentId).delete();
+    await commentRef.delete();
 
     // Decrement comment count on the blog post
     const blogRef = db.collection('blogs').doc(blogId);
@@ -1094,6 +1106,29 @@ app.post('/api/delete-comment', ensureAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error deleting comment:', error);
     res.status(500).json({ error: 'Internal server error while deleting comment.' });
+  }
+});
+
+// ----------------------------
+// Admin Delete Reply Route
+// ----------------------------
+app.post('/api/delete-reply', ensureAdmin, async (req, res) => {
+  const { blogId, commentId, replyId } = req.body;
+  if (!blogId || !commentId || !replyId) {
+    return res.status(400).json({ error: 'Blog ID, Comment ID, and Reply ID are required.' });
+  }
+
+  try {
+    const commentRef = db.collection('blogs').doc(blogId).collection('comments').doc(commentId);
+    const replyRef = commentRef.collection('replies').doc(replyId);
+
+    await replyRef.delete();
+    await commentRef.update({ repliesCount: admin.firestore.FieldValue.increment(-1) });
+
+    res.status(200).json({ success: true, message: 'Reply deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting reply:', error);
+    res.status(500).json({ error: 'Internal server error while deleting reply.' });
   }
 });
 
@@ -1208,6 +1243,7 @@ app.post('/api/add-comment', async (req, res) => {
       createdAt: new Date(),
       likes: 0,
       likedBy: [],
+      repliesCount: 0,
     };
 
     const commentsRef = db.collection('blogs').doc(blogId).collection('comments');
@@ -1221,6 +1257,87 @@ app.post('/api/add-comment', async (req, res) => {
   } catch (error) {
     console.error('Error adding comment:', error);
     res.status(500).json({ error: 'Internal server error while adding comment.' });
+  }
+});
+
+// ----------------------------
+// User Add Reply to Comment Route
+// ----------------------------
+app.post('/api/add-reply', async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: 'User not authenticated' });
+  }
+
+  const { blogId, commentId, author, text } = req.body;
+  if (!blogId || !commentId || !author || !text) {
+    return res.status(400).json({ error: 'Blog ID, Comment ID, author, and text are required.' });
+  }
+
+  try {
+    const commentRef = db.collection('blogs').doc(blogId).collection('comments').doc(commentId);
+    const commentSnap = await commentRef.get();
+    if (!commentSnap.exists) {
+      return res.status(404).json({ error: 'Comment not found.' });
+    }
+
+    const replyData = {
+      author,
+      text,
+      authorEmail: req.user.email,
+      authorRole: req.user.role,
+      createdAt: new Date(),
+      likes: 0,
+      likedBy: [],
+    };
+
+    await commentRef.collection('replies').add(replyData);
+    await commentRef.update({ repliesCount: admin.firestore.FieldValue.increment(1) });
+
+    res.status(201).json({ success: true, message: 'Reply added successfully.' });
+  } catch (error) {
+    console.error('Error adding reply:', error);
+    res.status(500).json({ error: 'Internal server error while adding reply.' });
+  }
+});
+
+// ----------------------------
+// User Like Reply Route
+// ----------------------------
+app.post('/api/like-reply', async (req, res) => {
+  const { blogId, commentId, replyId, action } = req.body; // action is 'like' or 'unlike'
+  if (!blogId || !commentId || !replyId || !action) {
+    return res.status(400).json({ error: 'Blog ID, Comment ID, Reply ID, and action are required.' });
+  }
+
+  try {
+    const replyRef = db
+      .collection('blogs')
+      .doc(blogId)
+      .collection('comments')
+      .doc(commentId)
+      .collection('replies')
+      .doc(replyId);
+
+    const incrementValue = action === 'like' ? 1 : -1;
+
+    if (req.isAuthenticated()) {
+      const userIdentifier = { uid: req.user.id, role: req.user.role };
+      const arrayUpdateOperation = action === 'like'
+        ? admin.firestore.FieldValue.arrayUnion(userIdentifier)
+        : admin.firestore.FieldValue.arrayRemove(userIdentifier);
+
+      await replyRef.update({
+        likes: admin.firestore.FieldValue.increment(incrementValue),
+        likedBy: arrayUpdateOperation
+      });
+    } else {
+      await replyRef.update({ likes: admin.firestore.FieldValue.increment(incrementValue) });
+    }
+
+    res.status(200).json({ success: true, message: 'Reply liked successfully.' });
+  } catch (error) {
+    console.error('Error liking reply:', error);
+    res.status(500).json({ error: 'Internal server error while liking reply.' });
   }
 });
 

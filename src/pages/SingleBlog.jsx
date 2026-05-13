@@ -1,7 +1,9 @@
 // src/pages/SingleBlog.jsx
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import DOMPurify from 'dompurify'; // Import the sanitizer
+import LoadingUI from "../components/LoadingUI";
+import { createFailurePath } from "../utils/failureRoute";
 import "../styles/style.css";
 
 const SingleBlog = () => {
@@ -36,8 +38,8 @@ const SingleBlog = () => {
     fetchPost();
   }, [id]);
 
-  if (loading) return <p>Loading post...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (loading) return <LoadingUI text="Loading post" detail="Fetching the article." variant="page" />;
+  if (error) return <Navigate to={createFailurePath(error)} replace />;
   if (!post) return null;
 
   return (

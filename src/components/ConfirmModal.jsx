@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './ConfirmModal.css';
+import LoadingUI from './LoadingUI';
 
 const ConfirmModal = ({
   isOpen,
@@ -27,12 +28,14 @@ const ConfirmModal = ({
         <div className="confirm-modal-body">{children}</div>
         
         {showProgress && loading && (
-          <div className="progress-bar-container" style={{ margin: '1rem 0' }}>
-            <p>{loadingText} {progress.toFixed(0)}%</p>
-            <div className="progress-bar">
-              <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-            </div>
-          </div>
+          <LoadingUI
+            text={loadingText}
+            detail={`${progress.toFixed(0)}% complete`}
+            progress={progress}
+            variant="card"
+            size="sm"
+            className="confirm-modal-loader"
+          />
         )}
         
         <div className="confirm-modal-actions">

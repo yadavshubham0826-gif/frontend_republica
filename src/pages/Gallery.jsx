@@ -6,6 +6,7 @@ import { useHeaderOffset } from '../hooks/useHeaderOffset';
 import { useUser } from '../context/UserContext';
 import { useColorPalette } from '../context/ColorContext.jsx';
 import ConfirmModal from '../components/ConfirmModal'; // For deletion confirmation
+import LoadingUI from '../components/LoadingUI';
 import '../styles/style.css';
 import { db } from '../firebase-config.js'; // Import Firestore instance
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Import Firestore functions
@@ -125,7 +126,7 @@ const Gallery = () => {
     }
   };
 
-  if (loading) return <p>Loading gradient...</p>;
+  if (loading) return <LoadingUI text="Preparing gallery" detail="Getting the page colors ready." variant="page" />;
 
   return (
     <main id="main-content" ref={mainRef}>
@@ -141,7 +142,7 @@ const Gallery = () => {
       <section id="gallery-full" className="section">
         <div className="container">
           {loadingAlbums ? (
-            <p style={{ textAlign: 'center' }}>Loading albums...</p>
+            <LoadingUI text="Loading albums" detail="Collecting gallery moments." variant="section" />
           ) : albums.length === 0 ? (
             <div className="card text-center">
               <p className="coming-soon-text">No photo albums have been added yet.</p>

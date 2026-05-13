@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import FadeInSection from '../components/FadeInSection';
 import { useUser } from '../context/UserContext';
 import ConfirmModal from '../components/ConfirmModal';
+import LoadingUI from '../components/LoadingUI';
+import { createFailurePath } from '../utils/failureRoute';
 import '../styles/style.css';
 import { useColorPalette } from '../context/ColorContext.jsx';
 import { db } from '../firebase-config.js'; // Import Firestore instance
@@ -91,8 +94,10 @@ const Janmat = () => {
 
   return (
     <>
-      {paletteLoading ? (
-        <p>Loading gradient...</p>
+      {error ? (
+        <Navigate to={createFailurePath(error)} replace />
+      ) : paletteLoading ? (
+        <LoadingUI text="Preparing Janmat" detail="Getting the page colors ready." variant="page" />
       ) : (
         <main id="main-content">
           <section className="page-hero" style={{ background: gradient }}>
@@ -114,8 +119,7 @@ const Janmat = () => {
             </div>
 
             <FadeInSection>
-              {loading && <p style={{ textAlign: 'center' }}>Loading editions...</p>}
-              {error && <p className="error-message" style={{ textAlign: 'center' }}>{error}</p>}
+              {loading && <LoadingUI text="Loading editions" detail="Fetching newsletter archives." variant="section" />}
               {!loading && flipbooks.length === 0 && (
                 <div className="container">
                   <div className="card text-center">

@@ -1,0 +1,86 @@
+.load-error-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 48px 20px;
+  background: #ffffff;
+}
+
+.load-error-panel {
+  width: min(760px, 100%);
+  padding: clamp(28px, 5vw, 46px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.load-error-kicker {
+  margin: 0 0 10px;
+  color: var(--brand, #0ea5e9);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.load-error-panel h1 {
+  margin: 0 0 26px;
+  color: var(--text, #172033);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.05;
+}
+
+.load-error-info {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.load-error-info span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted, #64748b);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.load-error-info code,
+.load-error-info p {
+  margin: 0;
+  color: var(--text, #172033);
+  font-size: 1rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.load-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.load-error-dev-btn {
+  background: #0ea5e9;
+  color: #ffffff;
+  border: 2px solid #0ea5e9;
+  box-shadow: 0 10px 24px rgba(14, 165, 233, 0.28);
+}
+
+.load-error-dev-btn:hover {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 560px) {
+  .load-error-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

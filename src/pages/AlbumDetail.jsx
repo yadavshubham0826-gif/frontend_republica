@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import { useUser } from '../context/UserContext'; // Import useUser for admin check
 import FadeInSection from '../components/FadeInSection';
 import ConfirmModal from '../components/ConfirmModal'; // Import ConfirmModal
+import LoadingUI from '../components/LoadingUI';
+import { createFailurePath } from '../utils/failureRoute';
 import { db } from '../firebase-config.js'; // Import Firestore instance
 import { doc, getDoc, updateDoc, arrayRemove } from 'firebase/firestore'; // Import Firestore functions
 // Assuming you have created this modal component
@@ -128,11 +130,11 @@ const AlbumDetail = () => {
 
   // Render loading or error message
   if (loading) {
-    return <div className="container" style={{ paddingTop: '150px', textAlign: 'center' }}>Loading album...</div>;
+    return <LoadingUI text="Loading album" detail="Opening this gallery collection." variant="page" />;
   }
 
   if (error) {
-    return <div className="container" style={{ paddingTop: '150px', textAlign: 'center' }}>{error}</div>;
+    return <Navigate to={createFailurePath(error)} replace />;
   }
 
 

@@ -4,6 +4,7 @@ import { useHeaderOffset } from '../hooks/useHeaderOffset';
 import { useColorPalette } from '../context/ColorContext.jsx';
 import { useUser } from '../context/UserContext';
 import Notification from '../components/Notification';
+import LoadingUI from '../components/LoadingUI';
 import '../styles/style.css';
 
 const Contact = () => {
@@ -74,7 +75,7 @@ const Contact = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingUI text="Preparing contact page" detail="Getting the page colors ready." variant="page" />;
 
   return (
     <main id="main-content" ref={mainRef}>
@@ -355,7 +356,7 @@ const Contact = () => {
                 ))}
 
                 <button type="submit" className="btn" disabled={submitting}>
-                  {submitting ? 'Sending...' : 'Send Message'}
+                  {submitting ? <><span className="spinner"></span> Sending...</> : 'Send Message'}
                 </button>
               </form>
             </div>

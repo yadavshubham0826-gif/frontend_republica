@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase-config";
 import DOMPurify from 'dompurify'; // Import the sanitizer
+import LoadingUI from "./LoadingUI";
+import { createFailurePath } from "../utils/failureRoute";
 import "./BlogPostPage.css"; // We'll create this for styling
 
 const BlogPostPage = () => {
@@ -37,11 +39,11 @@ const BlogPostPage = () => {
   }, [blogId]);
 
   if (loading) {
-    return <div className="blog-page-container">Loading...</div>;
+    return <LoadingUI text="Loading post" detail="Fetching the article." variant="page" />;
   }
 
   if (error) {
-    return <div className="blog-page-container">{error}</div>;
+    return <Navigate to={createFailurePath(error)} replace />;
   }
 
   if (!post) {

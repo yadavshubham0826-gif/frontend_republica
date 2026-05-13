@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import FadeInSection from '../components/FadeInSection';
 import { useColorPalette } from '../context/ColorContext.jsx';
 import { useUser } from '../context/UserContext';
 import ConfirmModal from '../components/ConfirmModal';
+import LoadingUI from '../components/LoadingUI';
+import { createFailurePath } from '../utils/failureRoute';
 import '../styles/style.css';
 import { db } from '../firebase-config.js'; // Import Firestore instance
 import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Import Firestore functions
@@ -83,7 +86,8 @@ function Notifications() {
     }
   };
 
-  if (paletteLoading) return <p>Loading...</p>;
+  if (paletteLoading) return <LoadingUI text="Preparing notifications" detail="Getting the page colors ready." variant="page" />;
+  if (error) return <Navigate to={createFailurePath(error)} replace />;
 
   return (
     <main id="main-content">
@@ -101,8 +105,7 @@ function Notifications() {
 
       <section className="section">
         <div className="container">
-          {loading && <p>Loading notifications...</p>}
-          {error && <p className="error-message">{error}</p>}
+          {loading && <LoadingUI text="Loading notifications" detail="Checking the latest announcements." variant="section" />}
           {!loading && !error && (
             <div className="notifications-list">
               {notifications.length > 0 ? (

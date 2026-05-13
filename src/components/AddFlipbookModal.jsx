@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
+import LoadingUI from './LoadingUI';
 import '../styles/style.css'; // Reusing modal styles
 
 const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
@@ -92,17 +93,14 @@ const AddFlipbookModal = ({ isOpen, onClose, onFlipbookAdded }) => {
           </div>
           
           {uploading && (
-            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
-              <p>Uploading... {progress.toFixed(0)}%</p>
-              <div className="progress-bar">
-                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-              </div>
-            </div>
+            <LoadingUI text="Uploading cover photo" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
           )}
           
           <div className="confirm-modal-actions">
             <button type="button" className="modal-button modal-secondary-btn" onClick={onClose} disabled={isLoading}>Cancel</button>
-            <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>{isLoading ? 'Saving...' : 'Save Flipbook'}</button>
+            <button type="submit" className="modal-button modal-primary-btn" disabled={isLoading}>
+              {isLoading ? <><span className="spinner"></span> Saving...</> : 'Save Flipbook'}
+            </button>
           </div>
         </form>
       </div>

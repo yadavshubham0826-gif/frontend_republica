@@ -10,6 +10,7 @@ import '../styles/style.css';
 import '../styles/HomeGallery.css';
 import TeamCard from "./TeamCard";
 import ImageSlideshow from "../components/ImageSlideshow";
+import LoadingUI from "../components/LoadingUI";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
@@ -210,7 +211,7 @@ const Home = () => {
               <div className="slideshow-section">
                 {loadingAlbums ? (
                   <div style={{ padding: '2rem', textAlign: 'center', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <p>Loading slideshow...</p>
+                    <LoadingUI text="Loading slideshow" detail="Preparing featured moments." variant="inline" />
                   </div>
                 ) : (
                   <ImageSlideshow images={slideshowImages} />
@@ -239,7 +240,7 @@ const Home = () => {
           <div className="home-blog-grid-container">
             <div className="grid three">
               {loadingPosts ? (
-                <p style={{ color: '#fff' }}>Loading latest posts...</p>
+                <LoadingUI text="Loading latest posts" variant="inline" className="loading-ui--inverse" />
               ) : latestPosts.length > 0 ? (
                 latestPosts.map((post, index) => (
                   <FadeInSection key={post.id} delay={(index + 1) * 0.1}>
@@ -451,7 +452,7 @@ const Home = () => {
       >
         <div className="home-gallery-container">
           {loadingAlbums ? (
-            <p>Loading albums...</p>
+            <LoadingUI text="Loading albums" variant="inline" className="loading-ui--inverse" />
           ) : galleryAlbums.length > 0 ? (
             <div className="home-gallery-film">
               {galleryAlbums.map((album, index) => (

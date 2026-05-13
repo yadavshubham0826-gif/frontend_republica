@@ -1,7 +1,9 @@
 // src/pages/BlogPostViewer.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import DOMPurify from 'dompurify'; // Import the sanitizer
+import LoadingUI from "../components/LoadingUI";
+import { createFailurePath } from "../utils/failureRoute";
 import "../styles/style.css";
 
 const BlogPostViewer = () => {
@@ -38,8 +40,8 @@ const BlogPostViewer = () => {
     if (slug) fetchPost();
   }, [slug]);
 
-  if (loading) return <div style={{ padding: "2rem" }}>Loading...</div>;
-  if (error) return <div style={{ padding: "2rem", color: "red" }}>{error}</div>;
+  if (loading) return <LoadingUI text="Loading post" detail="Fetching the article." variant="page" />;
+  if (error) return <Navigate to={createFailurePath(error)} replace />;
   if (!post) return null;
 
   return (

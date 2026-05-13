@@ -2,9 +2,11 @@
 import { useState, useEffect } from "react";
 import { useColorPalette } from '../context/ColorContext.jsx';
 import { useUser } from '../context/UserContext';
-import { useNavigate } from "react-router-dom"; // for navigation
+import { Navigate, useNavigate } from "react-router-dom"; // for navigation
 import ConfirmModal from "../components/ConfirmModal";
 import EditBlogModal from "../components/EditBlogModal";
+import LoadingUI from "../components/LoadingUI";
+import { createFailurePath } from "../utils/failureRoute";
 import { db } from "../firebase-config.js"; // Import Firestore instance
 import { collection, getDocs, query, orderBy, doc, updateDoc, increment } from "firebase/firestore"; // Import Firestore functions
 import "../styles/style.css";
@@ -96,7 +98,10 @@ const Blog = () => {
   }, []);
 
   if (paletteLoading) {
-    return <p>Loading...</p>;
+    return <LoadingUI text="Preparing blog" detail="Getting the page colors ready." variant="page" />;
+  }
+  if (error) {
+    return <Navigate to={createFailurePath(error)} replace />;
   }
   const gradient = palette.gradient;
 
@@ -199,8 +204,7 @@ const Blog = () => {
             <h2>Latest Posts</h2>
           </div>
 
-          {loading && <p>Loading posts...</p>}
-          {error && <p className="error-message">{error}</p>}
+          {loading && <LoadingUI text="Loading posts" detail="Fetching the latest articles." variant="section" />}
           {!loading && posts.length === 0 && <p>No posts yet.</p>}
 
           <div className="grid">

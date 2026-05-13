@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { useUser } from '../context/UserContext';
 import { useModal } from '../context/ModalContext'; // To open login modal
 import ConfirmModal from '../components/ConfirmModal';
 import DOMPurify from 'dompurify'; // Import the sanitizer
 import Notification from '../components/Notification';
+import LoadingUI from '../components/LoadingUI';
+import { createFailurePath } from '../utils/failureRoute';
 import { db } from "../firebase-config.js"; // Import Firestore instance
 import { collection, query, where, getDocs, doc, updateDoc, increment, orderBy } from "firebase/firestore"; // Import Firestore functions
 import { formatDate } from '../utils/dateFormatter'; // Import the date formatter utility
@@ -479,8 +481,8 @@ const BlogDetail = () => {
     }
   };
 
-  if (loading) return <div className="blog-loading">Loading...</div>;
-  if (error) return <div className="blog-error">{error}</div>;
+  if (loading) return <LoadingUI text="Loading post" detail="Fetching the article and discussion." variant="page" />;
+  if (error) return <Navigate to={createFailurePath(error)} replace />;
   if (!post) return null;
 
   return (
@@ -585,7 +587,7 @@ const BlogDetail = () => {
             </form>
 
             <div className="comment-list">
-              {commentsLoading && <p>Loading comments...</p>}
+              {commentsLoading && <LoadingUI text="Loading comments" variant="inline" size="sm" />}
               {!commentsLoading &&
                 comments.map((comment) => {                  
                   const anonymousLikes = JSON.parse(localStorage.getItem('anonymousLikes') || '[]');
@@ -685,7 +687,7 @@ const BlogDetail = () => {
                           </div>
 
                           <div className="reply-list">
-                            {repliesLoading[comment.id] && <p>Loading replies...</p>}
+                            {repliesLoading[comment.id] && <LoadingUI text="Loading replies" variant="inline" size="sm" />}
                             {!repliesLoading[comment.id] && replies.length === 0 && (
                               <p className="reply-empty">No replies yet.</p>
                             )}

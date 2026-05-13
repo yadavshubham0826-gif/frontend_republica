@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import heic2any from 'heic2any'; // Import the conversion library
 import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
+import LoadingUI from './LoadingUI';
 
 const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
   const [title, setTitle] = useState('');
@@ -199,12 +200,7 @@ const CreateAlbumModal = ({ isOpen, onClose, onAlbumCreated }) => {
           {uploadError && <p className="error-message">{uploadError.message}</p>}
 
           {uploading && (
-            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
-              <p>Uploading cover photo... {progress.toFixed(0)}%</p>
-              <div className="progress-bar">
-                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-              </div>
-            </div>
+            <LoadingUI text="Uploading cover photo" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
           )}
 
           <div className="modal-actions">

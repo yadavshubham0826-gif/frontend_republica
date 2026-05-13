@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
+import LoadingUI from './LoadingUI';
 
 const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
   const [title, setTitle] = useState("");
@@ -176,12 +177,7 @@ const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
 
         <div className="modal-actions">
           {isUploading && (
-            <div className="progress-bar-container" style={{ width: '100%', marginBottom: '1rem' }}>
-              <p>Uploading Image: {progress.toFixed(0)}%</p>
-              <div className="progress-bar">
-                <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-              </div>
-            </div>
+            <LoadingUI text="Uploading image" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
           )}
           <button onClick={onClose} className="btn btn-secondary" disabled={loading || isUploading}>
             Cancel
@@ -192,7 +188,7 @@ const EditBlogModal = ({ isOpen, onClose, postToEdit, onAddBlog }) => {
             className="btn btn-primary"
             disabled={loading || isUploading}
           >
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? <><span className="spinner"></span> Saving...</> : "Save Changes"}
           </button>
         </div>
       </div>

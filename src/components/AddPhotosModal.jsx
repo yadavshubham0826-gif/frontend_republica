@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
+import LoadingUI from './LoadingUI';
 import '../styles/AddPhotosModal.css';
 
 const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => {
@@ -255,12 +256,7 @@ const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => 
               </div>
             )}
             {uploading && (
-                <div className="progress-bar-container">
-                    <p>Uploading... {progress.toFixed(0)}%</p>
-                    <div className="progress-bar">
-                        <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-                    </div>
-                </div>
+              <LoadingUI text="Uploading photos" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
             )}
             <div className="modal-actions">
               <button className="modal-button modal-primary-btn" onClick={handleUpload} disabled={isOperationInProgress || files.length === 0}>
@@ -284,12 +280,7 @@ const AddPhotosModal = ({ isOpen, onClose, onUploadComplete, initialAlbum }) => 
               </div>
             </div>
              {uploading && (
-                <div className="progress-bar-container">
-                    <p>Uploading cover photo... {progress.toFixed(0)}%</p>
-                    <div className="progress-bar">
-                        <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-                    </div>
-                </div>
+              <LoadingUI text="Uploading cover photo" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
             )}
             <div className="modal-actions">
               <button className="modal-button modal-primary-btn" onClick={handleCreateAlbum} disabled={isOperationInProgress || !newAlbumTitle || !coverPhoto}>

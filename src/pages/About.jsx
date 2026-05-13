@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeInSection from '../components/FadeInSection';
+import LoadingUI from '../components/LoadingUI';
 import { useColorPalette } from '../context/ColorContext.jsx';
 import '../styles/style.css';
 import '../styles/team.css';
@@ -8,7 +9,7 @@ function About() {
   const { palette, loading } = useColorPalette();
   const gradient = palette.gradient;
 
-  if (loading) return <p>Loading gradient...</p>;
+  if (loading) return <LoadingUI text="Preparing about page" detail="Getting the page colors ready." variant="page" />;
 
   return (
     <main id="main-content">

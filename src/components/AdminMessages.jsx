@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import ConfirmModal from './ConfirmModal';
+import LoadingUI from './LoadingUI';
+import { createFailurePath } from '../utils/failureRoute';
 import './AdminMessages.css';
 
 const AdminMessages = () => {
@@ -103,11 +105,11 @@ const AdminMessages = () => {
   };
 
   if (userLoading || loading) {
-    return <div className="admin-messages-container"><p>Loading...</p></div>;
+    return <div className="admin-messages-container"><LoadingUI text="Loading messages" detail="Checking admin access and contact messages." variant="section" /></div>;
   }
 
   if (error) {
-    return <div className="admin-messages-container"><p className="error-message">{error}</p></div>;
+    return <Navigate to={createFailurePath(error)} replace />;
   }
 
   return (

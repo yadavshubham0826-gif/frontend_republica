@@ -5,6 +5,7 @@ import { useColorPalette } from '../context/ColorContext.jsx'; // use your conte
 import { db } from '../firebase-config.js';
 import { doc, getDoc } from 'firebase/firestore';
 import DOMPurify from 'dompurify';
+import LoadingUI from '../components/LoadingUI';
 
 const LatestJanmat = () => {
   const { user } = useUser();
@@ -68,7 +69,7 @@ const LatestJanmat = () => {
         <div className="container">
           <FadeInSection>
             {loading ? (
-              <p style={{ textAlign: 'center' }}>Loading newsletter...</p>
+              <LoadingUI text="Loading newsletter" detail="Opening the latest Janmat edition." variant="section" />
             ) : newsletter ? (
               <div className="card" style={{ padding: '2rem' }}>
                 {newsletter.previewImageUrl && (

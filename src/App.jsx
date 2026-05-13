@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 import { UserProvider } from "./context/UserContext";
 import { ColorPaletteProvider } from "./context/ColorContext.jsx";
 import MainLayout from "./components/MainLayout";
@@ -62,6 +63,7 @@ function App() {
           </ErrorBoundary>
         </MainLayout>
       </Router>
+      <Analytics />
     </GoogleOAuthProvider>
   );
 }

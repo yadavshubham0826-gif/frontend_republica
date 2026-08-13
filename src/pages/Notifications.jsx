@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
+import { PhotoProvider, PhotoView } from 'react-photo-view';
 import FadeInSection from '../components/FadeInSection';
 import { useColorPalette } from '../context/ColorContext.jsx';
 import { useUser } from '../context/UserContext';
@@ -7,8 +8,9 @@ import ConfirmModal from '../components/ConfirmModal';
 import LoadingUI from '../components/LoadingUI';
 import { createFailurePath } from '../utils/failureRoute';
 import '../styles/style.css';
+import 'react-photo-view/dist/react-photo-view.css';
 import { db } from '../firebase-config.js'; // Import Firestore instance
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'; // Import Firestore functions
+import { collection, doc, getDocs, orderBy, query, updateDoc } from 'firebase/firestore'; // Import Firestore functions
 
 function Notifications() {
   const { palette, loading: paletteLoading } = useColorPalette();
@@ -22,6 +24,21 @@ function Notifications() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [pinningId, setPinningId] = useState(null);
+
+  const handlePhotoViewVisibleChange = (visible) => {
+    if (visible) {
+      document.body.dataset.allowPhotoViewSave = 'true';
+    } else {
+      delete document.body.dataset.allowPhotoViewSave;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      delete document.body.dataset.allowPhotoViewSave;
+    };
+  }, []);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -36,8 +53,12 @@ function Notifications() {
           const createdAtString = docData.createdAt?.toDate 
             ? docData.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Date not available';
+          const createdAtMs = docData.createdAt?.toDate ? docData.createdAt.toDate().getTime() : 0;
 
-          return { id: doc.id, ...docData, createdAt: createdAtString };
+          return { id: doc.id, ...docData, pinned: Boolean(docData.pinned), createdAt: createdAtString, createdAtMs };
+        }).sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+          return b.createdAtMs - a.createdAtMs;
         });
 
         setNotifications(data);
@@ -54,6 +75,31 @@ function Notifications() {
   const openDeleteConfirm = (notification) => {
     setNotificationToDelete(notification);
     setIsConfirmOpen(true);
+  };
+
+  const handleTogglePin = async (notification) => {
+    if (!isUserAdmin) return;
+
+    const nextPinned = !notification.pinned;
+    setPinningId(notification.id);
+    setError('');
+
+    try {
+      await updateDoc(doc(db, 'notifications', notification.id), {
+        pinned: nextPinned,
+      });
+
+      setNotifications(prev => prev
+        .map(item => item.id === notification.id ? { ...item, pinned: nextPinned } : item)
+        .sort((a, b) => {
+          if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+          return b.createdAtMs - a.createdAtMs;
+        }));
+    } catch (err) {
+      setError(err.message || 'Failed to update pinned status.');
+    } finally {
+      setPinningId(null);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -108,14 +154,24 @@ function Notifications() {
         <div className="container">
           {loading && <LoadingUI text="Loading notifications" detail="Checking the latest announcements." variant="section" />}
           {!loading && !error && (
-            <div className="notifications-list">
+            <PhotoProvider
+              maskOpacity={0.9}
+              bannerVisible={true}
+              pullClosable={true}
+              maskClosable={true}
+              onVisibleChange={handlePhotoViewVisibleChange}
+            >
+              <div className="notifications-list">
               {notifications.length > 0 ? (
                 notifications.map(notification => (
                   <FadeInSection key={notification.id} className="notification-card">
                     <div className="notification-inner-content">
                       <div className="notification-text-content">
                         <div className="notification-header">
-                          <h3 className="notification-title">{notification.title}</h3>
+                          <div className="notification-title-group">
+                            <h3 className="notification-title">{notification.title}</h3>
+                            {notification.pinned && <span className="notification-pinned-badge">Pinned</span>}
+                          </div>
                           <span className="notification-date">{notification.createdAt}</span>
                         </div>
                         <p className="notification-content">{notification.content}</p>
@@ -138,12 +194,37 @@ function Notifications() {
                       </div>
                       <div className="notification-media-content">
                         {notification.photo && (
-                          <div className="notification-photo-container">
-                            <img src={notification.photo.url} alt={notification.title} className="notification-photo" />
+                          <div className="notification-photo-container" data-allow-image-save="true">
+                            <PhotoView src={notification.photo.url}>
+                              <img src={notification.photo.url} alt={notification.title} className="notification-photo" />
+                            </PhotoView>
                           </div>
+                        )}
+                        {!notification.photo && notification.document?.url && (
+                          <a
+                            href={notification.document.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="notification-pdf-preview-link"
+                            aria-label={`Open ${notification.document.name || 'PDF document'} in a new tab`}
+                          >
+                            <iframe
+                              src={`${notification.document.url}#toolbar=0&navpanes=0&scrollbar=0`}
+                              title={notification.document.name || `${notification.title} PDF preview`}
+                              className="notification-pdf-preview"
+                            />
+                          </a>
                         )}
                         {isUserAdmin && (
                           <div className="notification-actions">
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePin(notification)}
+                              className={`pin-notification-btn${notification.pinned ? ' pinned' : ''}`}
+                              disabled={pinningId === notification.id}
+                            >
+                              {pinningId === notification.id ? 'Saving...' : notification.pinned ? 'Unpin' : 'Pin'}
+                            </button>
                             <button onClick={() => openDeleteConfirm(notification)} className="delete-notification-btn">Delete</button>
                           </div>
                         )}
@@ -152,7 +233,8 @@ function Notifications() {
                   </FadeInSection>
                 ))
               ) : (<p>No notifications found.</p>)}
-            </div>
+              </div>
+            </PhotoProvider>
           )}
         </div>
       </section>

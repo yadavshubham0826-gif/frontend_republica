@@ -9,6 +9,16 @@ const hasBackgroundImage = (element) => {
 const isImageLikeElement = (target) => {
   if (!(target instanceof Element)) return false;
 
+  const allowedElement = target.closest('[data-allow-image-save="true"]');
+  if (allowedElement) return false;
+
+  if (
+    document.body.dataset.allowPhotoViewSave === 'true' &&
+    target.closest('.PhotoView__Photo')
+  ) {
+    return false;
+  }
+
   const protectedElement = target.closest(
     'img, picture, .PhotoView__Photo, .album-card-image, .blog-preview-image-container'
   );
@@ -26,6 +36,14 @@ const isImageLikeElement = (target) => {
 
 const protectImages = () => {
   document.querySelectorAll('img').forEach((image) => {
+    if (
+      image.closest('[data-allow-image-save="true"]') ||
+      (document.body.dataset.allowPhotoViewSave === 'true' && image.classList.contains('PhotoView__Photo'))
+    ) {
+      image.removeAttribute('oncontextmenu');
+      return;
+    }
+
     image.setAttribute('draggable', 'false');
     image.setAttribute('oncontextmenu', 'return false;');
   });

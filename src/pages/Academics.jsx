@@ -138,7 +138,7 @@ const Academics = () => {
 
         <li>
           <span className="faculty-name">Dr. Shachi Chawla</span>
-          <span className="faculty-role"><strong> (Teacher In Charge)</strong></span>
+          <span className="faculty-role"></span>
         </li>
 
         <li>
@@ -150,11 +150,11 @@ const Academics = () => {
         </li>
 
         <li>
-          <span className="faculty-name">Dr. Smita Yadav</span>
+          <span className="faculty-name">Dr. Smita Yadav <strong>(Teacher In Charge)</strong></span>
         </li>
 
         <li>
-          <span className="faculty-name">Dr. Malvika Singh</span>
+          <span className="faculty-name">Dr. Malvika Singh <strong> (Association In Charge)</strong></span>
         </li>
 
         <li>
@@ -179,7 +179,7 @@ const Academics = () => {
         </li>
 
         <li>
-          <span className="faculty-name">Dr. Nitesh Rai</span>
+          <span className="faculty-name">Dr. Nitesh Rai<strong> (Association In Charge)</strong></span>
         </li>
 
         <li>

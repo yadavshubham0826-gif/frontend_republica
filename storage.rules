@@ -32,6 +32,18 @@ service firebase.storage {
       allow write: if isAdmin(); // Only admins can upload/delete
     }
 
+    // Notification photos: Only admins can write
+    match /notifications/{imageId} {
+      allow read: if true; // Anyone can read
+      allow write: if isAdmin(); // Only admins can upload/delete
+    }
+
+    // Notification PDF documents: Only admins can write
+    match /noti_doc/{documentId} {
+      allow read: if true; // Anyone can read
+      allow write: if isAdmin(); // Only admins can upload/delete
+    }
+
     // Slideshow images: Publicly readable
     match /slideshow/{imageId} {
       allow read, list: if true;

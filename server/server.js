@@ -891,7 +891,7 @@ app.post('/api/add-photos-to-album', ensureAdmin, async (req, res) => {
 // Admin Add Notification Route
 // ----------------------------
 app.post('/api/add-notification', ensureAdmin, async (req, res) => {
-  const { title, content, photoURL, linkUrl, linkName } = req.body;
+  const { title, content, photoURL, pdfURL, pdfName, linkUrl, linkName } = req.body;
 
   if (!title || !content) {
     return res.status(400).json({ error: 'Title and content are required.' });
@@ -899,6 +899,7 @@ app.post('/api/add-notification', ensureAdmin, async (req, res) => {
 
   try {
     let photoData = null;
+    let documentData = null;
 
     if (photoURL) {
       const path = extractPathFromFirebaseURL(photoURL);
@@ -911,6 +912,18 @@ app.post('/api/add-notification', ensureAdmin, async (req, res) => {
       };
     }
 
+    if (pdfURL) {
+      const path = extractPathFromFirebaseURL(pdfURL);
+      if (!path) {
+        console.warn(`Could not extract path from notification PDF URL: ${pdfURL}`);
+      }
+      documentData = {
+        url: pdfURL,
+        path: path || '',
+        name: pdfName || 'Notification document',
+      };
+    }
+
     // Prepare data for Firestore
     const notificationData = {
       title,
@@ -918,6 +931,7 @@ app.post('/api/add-notification', ensureAdmin, async (req, res) => {
       linkUrl: linkUrl || '',
       linkName: linkName || '',
       photo: photoData, // Will be null if no photo was uploaded
+      document: documentData, // Will be null if no PDF was uploaded
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
@@ -934,22 +948,71 @@ app.post('/api/add-notification', ensureAdmin, async (req, res) => {
 // Admin Delete Notification Route
 // ----------------------------
 app.post('/api/delete-notification', ensureAdmin, async (req, res) => {
-  const { notificationId, photoPath } = req.body;
+  const { notificationId, photoPath, documentPath } = req.body;
 
   if (!notificationId) {
     return res.status(400).json({ error: 'Notification ID is required.' });
   }
 
   try {
-    // 1. Delete photo from Firebase if it exists
-    if (photoPath) {
-      console.log(`Deleting notification photo from Firebase: ${photoPath}`);
-      await deleteFileFromFirebase(photoPath);
-      console.log('Photo deleted from Firebase.');
+    const notificationRef = db.collection('notifications').doc(notificationId);
+    const notificationSnapshot = await notificationRef.get();
+
+    if (!notificationSnapshot.exists) {
+      return res.status(404).json({ error: 'Notification not found.' });
     }
 
-    // 2. Delete the notification document from Firestore
-    await db.collection('notifications').doc(notificationId).delete();
+    const notificationData = notificationSnapshot.data();
+    const assetPaths = new Set();
+
+    const addAssetPath = (asset, fallbackPath) => {
+      if (fallbackPath) {
+        assetPaths.add(fallbackPath);
+      }
+
+      if (!asset) return;
+
+      if (typeof asset === 'string') {
+        assetPaths.add(extractPathFromFirebaseURL(asset) || asset);
+        return;
+      }
+
+      if (asset.path) {
+        assetPaths.add(asset.path);
+      } else if (asset.url) {
+        const extractedPath = extractPathFromFirebaseURL(asset.url);
+        if (extractedPath) {
+          assetPaths.add(extractedPath);
+        }
+      }
+    };
+
+    addAssetPath(notificationData.photo, photoPath);
+    addAssetPath(notificationData.document, documentPath);
+    addAssetPath(notificationData.pdf, null);
+
+    if (notificationData.photoURL) {
+      addAssetPath(notificationData.photoURL, null);
+    }
+
+    if (notificationData.pdfURL) {
+      addAssetPath(notificationData.pdfURL, null);
+    }
+
+    if (assetPaths.size > 0) {
+      const deletionResults = await Promise.allSettled(
+        [...assetPaths].map(path => deleteFileFromFirebase(path))
+      );
+
+      const failedDeletes = deletionResults.filter(result => result.status === 'rejected');
+      if (failedDeletes.length > 0) {
+        console.error(`Failed to delete ${failedDeletes.length} notification asset(s).`, failedDeletes);
+        return res.status(500).json({ error: 'Could not delete all notification files. Metadata was not deleted.' });
+      }
+    }
+
+    // Delete Firestore metadata only after Storage assets have been handled.
+    await notificationRef.delete();
 
     console.log(`Admin '${req.user.email}' deleted notification with ID: ${notificationId}`);
     res.status(200).json({ success: true, message: 'Notification deleted successfully.' });

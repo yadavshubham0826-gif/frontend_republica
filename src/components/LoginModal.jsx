@@ -210,7 +210,11 @@ const LoginModal = ({ onClose, onSwitchToSignup }) => {
       }
     } catch (err) {
       console.error("Email login error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      if (err instanceof TypeError && err.message === "Failed to fetch") {
+        setError("Unable to connect to the server. Make sure the backend is running (npm run dev:backend).");
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,7 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [photo, setPhoto] = useState(null);
+  const [pdfDoc, setPdfDoc] = useState(null);
   const [linkUrl, setLinkUrl] = useState('');
   const [linkName, setLinkName] = useState('');
   const [error, setError] = useState('');
@@ -41,6 +42,25 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
     }
   };
 
+  const handlePdfChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) {
+      setPdfDoc(null);
+      return;
+    }
+
+    const isPdf = selectedFile.type === 'application/pdf' || selectedFile.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      setPdfDoc(null);
+      e.target.value = '';
+      setError('Please upload a PDF document only.');
+      return;
+    }
+
+    setError('');
+    setPdfDoc(selectedFile);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -56,6 +76,14 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
         photoURL = typeof photoData === 'string' ? photoData : photoData.url;
       }
 
+      let pdfData = null;
+      if (pdfDoc) {
+        const uploadedPdf = await uploadPhoto(pdfDoc, 'noti_doc/');
+        pdfData = typeof uploadedPdf === 'string'
+          ? { url: uploadedPdf, name: pdfDoc.name }
+          : { ...uploadedPdf, name: pdfDoc.name };
+      }
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-notification`, {
         method: "POST",
         credentials: 'include',
@@ -64,6 +92,8 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
           title,
           content,
           photoURL, // Sending URL
+          pdfURL: pdfData?.url || '',
+          pdfName: pdfData?.name || '',
           linkUrl,
           linkName,
         }),
@@ -104,6 +134,10 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
             <input id="notificationPhoto" type="file" accept="image/*" onChange={handleFileChange} />
           </div>
           <div className="form-group">
+            <label htmlFor="notificationPdf">PDF Document (Optional)</label>
+            <input id="notificationPdf" type="file" accept="application/pdf,.pdf" onChange={handlePdfChange} />
+          </div>
+          <div className="form-group">
             <label htmlFor="notificationLinkUrl">Link URL (Optional)</label>
             <input id="notificationLinkUrl" type="url" placeholder="https://example.com" value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} />
           </div>
@@ -113,7 +147,7 @@ const AddNotificationModal = ({ isOpen, onClose, onNotificationAdded }) => {
           </div>
           
           {uploading && (
-            <LoadingUI text="Uploading photo" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
+            <LoadingUI text="Uploading file" detail={`${progress.toFixed(0)}% complete`} progress={progress} variant="card" size="sm" />
           )}
           
           <div className="modal-actions">

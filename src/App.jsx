@@ -4,6 +4,7 @@ import { UserProvider } from "./context/UserContext";
 import { ColorPaletteProvider } from "./context/ColorContext.jsx";
 import MainLayout from "./components/MainLayout";
 import ScrollToTop from "./components/ScrollToTop";
+import ImageProtection from "./components/ImageProtection";
 
 // Pages
 import Home from "./pages/Home";
@@ -40,6 +41,7 @@ function App() {
     <GoogleOAuthProvider clientId={googleClientId}>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <ScrollToTop />
+        <ImageProtection />
         <MainLayout>
           <ErrorBoundary>
             <Routes>

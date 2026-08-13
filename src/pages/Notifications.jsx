@@ -69,6 +69,7 @@ function Notifications() {
         body: JSON.stringify({
           notificationId: notificationToDelete.id,
           photoPath: notificationToDelete.photo?.path, // Send path for Firebase Storage deletion
+          documentPath: notificationToDelete.document?.path,
         }),
       });
 
@@ -118,6 +119,17 @@ function Notifications() {
                           <span className="notification-date">{notification.createdAt}</span>
                         </div>
                         <p className="notification-content">{notification.content}</p>
+                        {notification.document?.url && (
+                          <a
+                            href={notification.document.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={notification.document.name || true}
+                            className="notification-document-link"
+                          >
+                            {notification.document.name || 'Open PDF Document'}
+                          </a>
+                        )}
                         {notification.linkUrl && notification.linkName && (
                           <a href={notification.linkUrl} target="_blank" rel="noopener noreferrer" className="btn notification-link-btn">
                             {notification.linkName}

@@ -3,6 +3,19 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@700&family=Montserrat:wght@700&display=swap');
 
+img,
+picture,
+.PhotoView__Photo,
+.album-card-image,
+.blog-preview-image,
+.blog-preview-image-container,
+.home-hero-image {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 
 /* =====================================
    Academics Image Section (Fully Isolated)
@@ -2636,6 +2649,26 @@ h2[id], h1[id] {
 .notification-link-btn {
   display: inline-block; /* Make button behave like a block but stay inline */
   margin-top: 1rem;
+}
+
+.notification-document-link {
+  display: inline-block;
+  margin-top: 1rem;
+  margin-right: 0.75rem;
+  color: #c62828;
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+.notification-document-link:hover {
+  color: #b71c1c;
+  text-decoration: underline;
+  transform: none;
+  box-shadow: none;
 }
 
 .notification-actions {

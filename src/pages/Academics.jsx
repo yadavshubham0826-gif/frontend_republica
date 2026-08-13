@@ -171,7 +171,7 @@ const Academics = () => {
 
         <li>
           <span className="faculty-name">Dr. Kunal Krishna</span>
-          <span className="faculty-role"> <strong> (Association In Charge)</strong></span>
+          <span className="faculty-role"></span>
         </li>
 
         <li>

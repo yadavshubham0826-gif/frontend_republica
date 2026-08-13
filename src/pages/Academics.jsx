@@ -148,43 +148,43 @@ const Academics = () => {
         <li>
           <span className="faculty-name">Mrs. Manjula Rath</span>
         </li>
+        <li>
+          <span className="faculty-name">Dr. Malvika Singh <strong> (Association In Charge)</strong></span>
+        </li>
+        <li>
+          <span className="faculty-name">Dr. Shivali Agrawal</span>
+        </li>
+        <li>
+          <span className="faculty-name">Dr. Nitesh Rai<strong> (Association In Charge)</strong></span>
+        </li>
+         <li>
+          <span className="faculty-name">Mrs. Nupur Tripathi</span>
+        </li>
 
         <li>
           <span className="faculty-name">Dr. Smita Yadav <strong>(Teacher In Charge)</strong></span>
         </li>
-
         <li>
-          <span className="faculty-name">Dr. Malvika Singh <strong> (Association In Charge)</strong></span>
+          <span className="faculty-name">Dr. Jaggu Dan Ratnoo</span>
         </li>
 
+       <li>
+          <span className="faculty-name">Dr. Piyush Kant</span>
+        </li>
         <li>
           <span className="faculty-name">Dr. Chandra Prakash</span>
         </li>
 
-        <li>
-          <span className="faculty-name">Dr. Piyush Kant</span>
-        </li>
-
-        <li>
-          <span className="faculty-name">Dr. Shivali Agrawal</span>
-        </li>
-
+              
         <li>
           <span className="faculty-name">Dr. Kunal Krishna</span>
           <span className="faculty-role"></span>
         </li>
 
-        <li>
-          <span className="faculty-name">Dr. Jaggu Dan Ratnoo</span>
-        </li>
+        
 
-        <li>
-          <span className="faculty-name">Dr. Nitesh Rai<strong> (Association In Charge)</strong></span>
-        </li>
-
-        <li>
-          <span className="faculty-name">Mrs. Nupur Tripathi</span>
-        </li>
+       
+       
       </ul>
     </FadeInSection>
   </div>

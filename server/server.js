@@ -1023,6 +1023,243 @@ app.post('/api/delete-notification', ensureAdmin, async (req, res) => {
 });
 
 // ----------------------------
+// Public Get All Flash Route
+// ----------------------------
+app.get('/api/flash', async (req, res) => {
+  try {
+    const flashQuery = db.collection('flash').orderBy('createdAt', 'desc');
+    const querySnapshot = await flashQuery.get();
+    const flashData = querySnapshot.docs.map(docSnap => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        ...data,
+        createdAt: data.createdAt?.toDate
+          ? data.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          : 'Date not available',
+      };
+    });
+    res.status(200).json(flashData);
+  } catch (error) {
+    console.error('Error fetching flash items:', error);
+    res.status(500).json({ error: 'Internal server error while fetching flash items.' });
+  }
+});
+
+// ----------------------------
+// Admin Add Flash Route
+// ----------------------------
+app.post('/api/add-flash', ensureAdmin, async (req, res) => {
+  const { title, attachmentType, linkUrl, photoURL, photoPath, pdfURL, pdfName, pdfPath } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Title is required.' });
+  }
+
+  if (!['image', 'pdf', 'url'].includes(attachmentType)) {
+    return res.status(400).json({ error: 'Choose one attachment type: image, PDF, or URL.' });
+  }
+
+  if ((attachmentType === 'image' && !photoURL) ||
+      (attachmentType === 'pdf' && !pdfURL) ||
+      (attachmentType === 'url' && !linkUrl)) {
+    return res.status(400).json({ error: 'An attachment is required for the selected type.' });
+  }
+
+  const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
+  if (wordCount > 30) {
+    return res.status(400).json({ error: 'Title must be 30 words or fewer.' });
+  }
+
+  try {
+    let photoData = null;
+    let documentData = null;
+
+    if (attachmentType === 'image' && photoURL) {
+      photoData = {
+        url: photoURL,
+        path: photoPath || extractPathFromFirebaseURL(photoURL) || '',
+      };
+    }
+
+    if (attachmentType === 'pdf' && pdfURL) {
+      documentData = {
+        url: pdfURL,
+        path: pdfPath || extractPathFromFirebaseURL(pdfURL) || '',
+        name: pdfName || 'Flash document',
+      };
+    }
+
+    const flashData = {
+      title: title.trim(),
+      attachmentType: attachmentType || 'none',
+      linkUrl: attachmentType === 'url' ? (linkUrl || '') : '',
+      photo: photoData,
+      document: documentData,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const docRef = await db.collection('flash').add(flashData);
+    console.log(`Admin '${req.user.email}' created new flash item with ID: ${docRef.id}`);
+    res.status(201).json({ success: true, message: 'Flash item added successfully.', flashId: docRef.id });
+  } catch (error) {
+    console.error('Error adding flash item:', error);
+    res.status(500).json({ error: 'Internal server error while adding flash item.' });
+  }
+});
+
+// ----------------------------
+// Admin Update Flash Route
+// ----------------------------
+app.post('/api/update-flash', ensureAdmin, async (req, res) => {
+  const {
+    flashId,
+    title,
+    attachmentType,
+    linkUrl,
+    photoURL,
+    photoPath,
+    pdfURL,
+    pdfName,
+    pdfPath,
+    oldPhotoPath,
+    oldDocumentPath,
+    oldAttachmentType,
+  } = req.body;
+
+  if (!flashId || !title) {
+    return res.status(400).json({ error: 'Flash ID and title are required.' });
+  }
+
+  const wordCount = title.trim().split(/\s+/).filter(Boolean).length;
+  if (wordCount > 30) {
+    return res.status(400).json({ error: 'Title must be 30 words or fewer.' });
+  }
+
+  try {
+    const flashRef = db.collection('flash').doc(flashId);
+    const flashSnapshot = await flashRef.get();
+
+    if (!flashSnapshot.exists) {
+      return res.status(404).json({ error: 'Flash item not found.' });
+    }
+
+    const existingData = flashSnapshot.data();
+    let photoData = null;
+    let documentData = null;
+
+    if (attachmentType === 'image') {
+      if (photoURL) {
+        if (oldPhotoPath && oldPhotoPath !== photoPath) {
+          await deleteFileFromFirebase(oldPhotoPath).catch(err => console.warn('Failed to delete old flash photo:', err));
+        }
+        photoData = {
+          url: photoURL,
+          path: photoPath || extractPathFromFirebaseURL(photoURL) || '',
+        };
+      } else {
+        photoData = existingData.photo || null;
+      }
+    } else if (oldAttachmentType === 'image' && oldPhotoPath) {
+      await deleteFileFromFirebase(oldPhotoPath).catch(err => console.warn('Failed to delete old flash photo:', err));
+    }
+
+    if (attachmentType === 'pdf') {
+      if (pdfURL) {
+        if (oldDocumentPath && oldDocumentPath !== pdfPath) {
+          await deleteFileFromFirebase(oldDocumentPath).catch(err => console.warn('Failed to delete old flash PDF:', err));
+        }
+        documentData = {
+          url: pdfURL,
+          path: pdfPath || extractPathFromFirebaseURL(pdfURL) || '',
+          name: pdfName || 'Flash document',
+        };
+      } else {
+        documentData = existingData.document || null;
+      }
+    } else if (oldAttachmentType === 'pdf' && oldDocumentPath) {
+      await deleteFileFromFirebase(oldDocumentPath).catch(err => console.warn('Failed to delete old flash PDF:', err));
+    }
+
+    const updateData = {
+      title: title.trim(),
+      attachmentType: attachmentType || 'none',
+      linkUrl: attachmentType === 'url' ? (linkUrl || '') : '',
+      photo: photoData,
+      document: documentData,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    await flashRef.update(updateData);
+    console.log(`Admin '${req.user.email}' updated flash item with ID: ${flashId}`);
+    res.status(200).json({ success: true, message: 'Flash item updated successfully.' });
+  } catch (error) {
+    console.error('Error updating flash item:', error);
+    res.status(500).json({ error: 'Internal server error while updating flash item.' });
+  }
+});
+
+// ----------------------------
+// Admin Delete Flash Route
+// ----------------------------
+app.post('/api/delete-flash', ensureAdmin, async (req, res) => {
+  const { flashId, photoPath, documentPath } = req.body;
+
+  if (!flashId) {
+    return res.status(400).json({ error: 'Flash ID is required.' });
+  }
+
+  try {
+    const flashRef = db.collection('flash').doc(flashId);
+    const flashSnapshot = await flashRef.get();
+
+    if (!flashSnapshot.exists) {
+      return res.status(404).json({ error: 'Flash item not found.' });
+    }
+
+    const flashData = flashSnapshot.data();
+    const assetPaths = new Set();
+
+    const addAssetPath = (asset, fallbackPath) => {
+      if (fallbackPath) assetPaths.add(fallbackPath);
+      if (!asset) return;
+      if (typeof asset === 'string') {
+        assetPaths.add(extractPathFromFirebaseURL(asset) || asset);
+        return;
+      }
+      if (asset.path) {
+        assetPaths.add(asset.path);
+      } else if (asset.url) {
+        const extractedPath = extractPathFromFirebaseURL(asset.url);
+        if (extractedPath) assetPaths.add(extractedPath);
+      }
+    };
+
+    addAssetPath(flashData.photo, photoPath);
+    addAssetPath(flashData.document, documentPath);
+
+    if (assetPaths.size > 0) {
+      const deletionResults = await Promise.allSettled(
+        [...assetPaths].map(path => deleteFileFromFirebase(path))
+      );
+      const failedDeletes = deletionResults.filter(result => result.status === 'rejected');
+      if (failedDeletes.length > 0) {
+        console.error(`Failed to delete ${failedDeletes.length} flash asset(s).`, failedDeletes);
+        return res.status(500).json({ error: 'Could not delete all flash files. Metadata was not deleted.' });
+      }
+    }
+
+    await flashRef.delete();
+    console.log(`Admin '${req.user.email}' deleted flash item with ID: ${flashId}`);
+    res.status(200).json({ success: true, message: 'Flash item deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting flash item:', error);
+    res.status(500).json({ error: 'Internal server error while deleting flash item.' });
+  }
+});
+
+// ----------------------------
 // Admin Delete Flipbook Route
 // ----------------------------
 app.post('/api/delete-flipbook', ensureAdmin, async (req, res) => {

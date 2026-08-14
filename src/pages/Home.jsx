@@ -11,6 +11,7 @@ import '../styles/HomeGallery.css';
 import TeamCard from "./TeamCard";
 import ImageSlideshow from "../components/ImageSlideshow";
 import LoadingUI from "../components/LoadingUI";
+import FlashTicker from "../components/FlashTicker";
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
@@ -165,6 +166,7 @@ const Home = () => {
 
   return (
     <main id="main-content" ref={mainRef}>
+      <FlashTicker />
       {/* -------------------- HEADER -------------------- */}
       <div 
         className="home-heading-container" 

@@ -1491,7 +1491,7 @@ h2[id], h1[id] {
 .social-media-sidebar {
     position: fixed;
     right: 20px;
-    top: 50%;
+    top: 57%;
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
@@ -2773,6 +2773,44 @@ h2[id], h1[id] {
 .delete-notification-btn:hover {
   background-color: #fdd;
   border-color: #faa;
+}
+
+/* Flash ticker and admin manager */
+.flash-ticker { display: grid; grid-template-columns: 220px minmax(0, 1fr) auto; align-items: stretch; min-height: 58px; background: #082e68; color: #fff; }
+.flash-ticker-label { display: flex; align-items: center; padding: 0.6rem 1.25rem; border-right: 1px solid rgba(255, 255, 255, 0.35); font-size: clamp(1.05rem, 1.6vw, 1.45rem); font-weight: 700; text-transform: uppercase; animation: flash-ticker-blink 1.2s ease-in-out infinite; }
+@keyframes flash-ticker-blink { 50% { opacity: 0.35; } }
+.flash-ticker-message { overflow: hidden; padding: 0.6rem 1.25rem; color: #fff; background: transparent; border: 0; font-size: clamp(0.9rem, 1.25vw, 1.1rem); text-align: center; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.flash-ticker-message:hover, .flash-ticker-message:focus-visible { text-decoration: underline; outline: none; }
+.flash-ticker-controls { display: flex; align-items: center; gap: 0.2rem; padding: 0 0.85rem; }
+.flash-ticker-controls button { width: 1.35rem; height: 2rem; padding: 0; color: #fff; background: transparent; border: 0; font-size: 2rem; font-weight: 700; line-height: 1; cursor: pointer; }
+.flash-ticker-controls button:nth-child(2) { font-size: 1rem; }
+.flash-ticker-controls button:hover, .flash-ticker-controls button:focus-visible { color: #ffb21a; outline: none; }
+.manage-flash-modal { max-width: 1060px; }
+.flash-manage-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr); gap: 2rem; }
+.flash-manage-list { min-width: 0; }
+.flash-manage-list h3, .flash-manage-form-section h3 { margin: 0 0 1rem; }
+.flash-manage-items { display: grid; gap: 0.65rem; max-height: 50vh; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.flash-manage-item { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; }
+.flash-manage-item.editing { border-color: var(--brand); background: #f0f9ff; }
+.flash-manage-item-info { display: grid; gap: 0.3rem; min-width: 0; }
+.flash-manage-item-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.flash-manage-item-type { width: max-content; padding: 0.15rem 0.4rem; border-radius: 999px; background: #eef5ff; color: #1d4f91; font-size: 0.7rem; font-weight: 700; }
+.flash-manage-item-actions { display: flex; flex-shrink: 0; gap: 0.45rem; }
+.flash-edit-btn { padding: 0.5rem 0.75rem; color: #1d4f91; background: #eef5ff; border: 1px solid #bdd7ff; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.flash-edit-btn:hover { background: #dfeeff; }
+.flash-attachment-options { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.flash-attachment-option { display: inline-flex !important; align-items: center; gap: 0.35rem; margin: 0 !important; font-weight: 500 !important; }
+.flash-attachment-option input { width: auto !important; padding: 0 !important; }
+.flash-current-file, .flash-manage-empty { margin: 0.5rem 0 0; color: var(--muted); font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+  .flash-ticker { grid-template-columns: 1fr auto; min-height: 0; }
+  .flash-ticker-label { padding: 0.7rem 1rem; border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.25); font-size: 1.2rem; }
+  .flash-ticker-message { padding: 0.85rem 1rem; font-size: 0.95rem; text-align: left; }
+  .flash-ticker-controls { grid-row: 1 / span 2; grid-column: 2; padding: 0 0.8rem; }
+  .flash-manage-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+  .flash-manage-items { max-height: 30vh; }
+  .manage-flash-modal { padding: 24px 18px; }
 }
 
 /* --- Mobile Header Fixes --- */

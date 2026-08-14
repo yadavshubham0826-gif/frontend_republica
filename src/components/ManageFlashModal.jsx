@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import useFirebasePhotoUploader from '../hooks/useFirebasePhotoUploader';
 import LoadingUI from './LoadingUI';
 import ConfirmModal from './ConfirmModal';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '../firebase-config';
 import '../styles/style.css';
 
 const TITLE_WORD_LIMIT = 30;
@@ -32,10 +34,11 @@ const ManageFlashModal = ({ isOpen, onClose, onFlashUpdated }) => {
   const fetchFlashItems = async () => {
     setLoadingList(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/flash`);
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Failed to load flash items.');
-      setFlashItems(result);
+      const flashQuery = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(flashQuery);
+      setFlashItems(snapshot.docs
+        .map((item) => ({ id: item.id, ...item.data() }))
+        .filter((item) => item.isFlash));
     } catch (err) {
       setError(err.message || 'Failed to load flash items.');
     } finally {

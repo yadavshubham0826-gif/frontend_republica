@@ -1027,7 +1027,7 @@ app.post('/api/delete-notification', ensureAdmin, async (req, res) => {
 // ----------------------------
 app.get('/api/flash', async (req, res) => {
   try {
-    const flashQuery = db.collection('flash').orderBy('createdAt', 'desc');
+    const flashQuery = db.collection('notifications').orderBy('createdAt', 'desc');
     const querySnapshot = await flashQuery.get();
     const flashData = querySnapshot.docs.map(docSnap => {
       const data = docSnap.data();
@@ -1038,7 +1038,7 @@ app.get('/api/flash', async (req, res) => {
           ? data.createdAt.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
           : 'Date not available',
       };
-    });
+    }).filter(item => item.isFlash);
     res.status(200).json(flashData);
   } catch (error) {
     console.error('Error fetching flash items:', error);
@@ -1091,6 +1091,7 @@ app.post('/api/add-flash', ensureAdmin, async (req, res) => {
     }
 
     const flashData = {
+      isFlash: true,
       title: title.trim(),
       attachmentType: attachmentType || 'none',
       linkUrl: attachmentType === 'url' ? (linkUrl || '') : '',
@@ -1100,7 +1101,7 @@ app.post('/api/add-flash', ensureAdmin, async (req, res) => {
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    const docRef = await db.collection('flash').add(flashData);
+    const docRef = await db.collection('notifications').add(flashData);
     console.log(`Admin '${req.user.email}' created new flash item with ID: ${docRef.id}`);
     res.status(201).json({ success: true, message: 'Flash item added successfully.', flashId: docRef.id });
   } catch (error) {
@@ -1138,7 +1139,7 @@ app.post('/api/update-flash', ensureAdmin, async (req, res) => {
   }
 
   try {
-    const flashRef = db.collection('flash').doc(flashId);
+    const flashRef = db.collection('notifications').doc(flashId);
     const flashSnapshot = await flashRef.get();
 
     if (!flashSnapshot.exists) {
@@ -1211,7 +1212,7 @@ app.post('/api/delete-flash', ensureAdmin, async (req, res) => {
   }
 
   try {
-    const flashRef = db.collection('flash').doc(flashId);
+    const flashRef = db.collection('notifications').doc(flashId);
     const flashSnapshot = await flashRef.get();
 
     if (!flashSnapshot.exists) {

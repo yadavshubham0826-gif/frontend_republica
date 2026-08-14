@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://frontend-republica.onrender.com';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '../firebase-config';
 
 const getAttachmentUrl = (item) => {
   if (item.attachmentType === 'url') return item.linkUrl;
@@ -17,9 +17,10 @@ const FlashTicker = () => {
   useEffect(() => {
     const loadFlashItems = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/flash`);
-        const result = await response.json();
-        if (response.ok) setItems(result.filter((item) => getAttachmentUrl(item)));
+        const flashQuery = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'));
+        const snapshot = await getDocs(flashQuery);
+        const result = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+        setItems(result.filter((item) => item.isFlash && getAttachmentUrl(item)));
       } catch (error) {
         console.error('Unable to load flash messages:', error);
       }

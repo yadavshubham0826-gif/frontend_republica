@@ -56,7 +56,7 @@ function Notifications() {
           const createdAtMs = docData.createdAt?.toDate ? docData.createdAt.toDate().getTime() : 0;
 
           return { id: doc.id, ...docData, pinned: Boolean(docData.pinned), createdAt: createdAtString, createdAtMs };
-        }).sort((a, b) => {
+        }).filter((notification) => !notification.isFlash).sort((a, b) => {
           if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
           return b.createdAtMs - a.createdAtMs;
         });

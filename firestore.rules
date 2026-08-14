@@ -73,6 +73,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Flash messages are public to read; changes go through the protected server routes.
+    match /flash/{flashId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Flipbooks (Janmat): Public read, admin write.
     match /flipbooks/{flipbookId} {
       allow read: if true;

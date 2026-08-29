@@ -715,7 +715,7 @@ function TeamSection() {
 
      <div style={styles.wrapper}>
   <TeamCard
-    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2Fkaumudi.jpg?alt=media&token=d8a74458-b362-4241-af81-95ff0d750426"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2Fkaumudi1.jpg?alt=media&token=6fb88a8d-9391-4f57-b45e-f0ab0033b19a"
     name="Kaumudi Sharma"
     role="President"/>
   <TeamCard
@@ -729,12 +729,12 @@ function TeamSection() {
     role="Vice President"
   />
   <TeamCard
-  img=""
+  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FArunima.jpg?alt=media&token=2311476e-281f-47a9-b86e-c5d20450e83b"
   name="Arunima Tiwari"
   role="General Secretary"
   />
   <TeamCard
-  img=""
+  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FEshika.JPG?alt=media&token=a38b0e06-86d3-41fd-a778-7d07c85080b1"
   name="Eshika Sahu"
   role="Joint Secretary"
   />

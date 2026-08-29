@@ -43,7 +43,7 @@ function About() {
           </div>
           <div className="team-box">
             <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FContent2026%2Fmoli.jpg?alt=media&token=68c9eb86-a8ef-42a2-affb-a7d8008827cc" alt="" />
-            <h3>Moli Singh Sikarawar</h3>
+            <h3>Moli Singh Sikarwar</h3>
             <p>Content and Research Head</p>
           </div>
         </section>
@@ -92,7 +92,7 @@ function About() {
             <p>Management Head</p>
           </div>
           <div className="team-box">
-            <img src="" alt="" />
+            <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FManagement%2FTanisha%20.png?alt=media&token=ac1b4742-c929-45a1-bf40-3b90ad5ee685" alt="" />
             <h3>Tanisha Choudhary</h3>
             <p>Management Head</p>
           </div>
@@ -134,7 +134,7 @@ function About() {
             <p>Technical Head</p>
           </div>
           <div className="team-box">
-            <img src="" alt="" />
+            <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FTechnical%2FIMG_5025.jpeg?alt=media&token=9b8a66a4-ce7f-44cd-9ef1-3ae00ba239c6" alt="" />
             <h3>Prachi Ghosh</h3>
             <p>Technical Head</p>
           </div>

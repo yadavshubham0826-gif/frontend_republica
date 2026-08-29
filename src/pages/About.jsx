@@ -129,7 +129,7 @@ function About() {
         <section className="team-section">
           <h2 className="team-title">Technical</h2>
           <div className="team-box">
-            <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FTechnical%2FPriyal.jpg?alt=media&token=d3ba7656-639d-4e81-ad54-28b3632008e4" alt=""/>       
+            <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FTechnical%2FPriyal.jpeg?alt=media&token=357cc9cd-0f82-4302-a7a2-a2a0eeac097d" alt=""/>       
            <h3>Priyal Jain</h3>
             <p>Technical Head</p>
           </div>

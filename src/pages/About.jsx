@@ -56,7 +56,7 @@ function About() {
             <p>Creative Head</p>
           </div>
           <div className="team-box">
-            <img src="" alt="" />
+            <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FCreative2026%2FSambhavi.jpg?alt=media&token=fea76295-683e-4617-ae29-ee39a0a50a3f" alt="" />
             <h3>Shambhavi Chauhan</h3>         
              <p>Creative Head</p>
           </div>
@@ -87,7 +87,7 @@ function About() {
             <p>Management Head</p>
           </div>
           <div className="team-box">
-            <img src="" alt="" />
+            <img src="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FManagement%2FGarima.jpg?alt=media&token=65861885-8d11-4e1e-82ff-979dbe96379a" alt="" />
             <h3>Garima Sharma</h3>
             <p>Management Head</p>
           </div>

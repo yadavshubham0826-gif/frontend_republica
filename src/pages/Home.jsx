@@ -715,7 +715,7 @@ function TeamSection() {
 
      <div style={styles.wrapper}>
   <TeamCard
-    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2Fkaumudi.jpg?alt=media&token=8de74885-049d-46f9-aea8-49e93a23ece5"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2Fkaumudi.jpg?alt=media&token=d8a74458-b362-4241-af81-95ff0d750426"
     name="Kaumudi Sharma"
     role="President"/>
   <TeamCard

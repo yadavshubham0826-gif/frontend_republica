@@ -33,6 +33,22 @@
     flex: 1 1 calc(33.33% - 20px);  /* 3 per row */
 }
 
+/* Pair single-tile sections side by side to fill one row */
+.team-solo-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.team-solo-group .team-section {
+    flex: 1 1 calc(50% - 20px);
+}
+
+.team-solo-group .team-section .team-box {
+    flex: 1 1 100%;
+    max-width: 100%;
+}
+
 /* Hover effect */
 .team-box:hover {
     transform: translateY(-6px);
@@ -65,6 +81,10 @@
 /* Mobile: 1 per row for all sections */
 @media (max-width: 768px) {
     .team-section .team-box {
+        flex: 1 1 100%;
+    }
+
+    .team-solo-group .team-section {
         flex: 1 1 100%;
     }
 }

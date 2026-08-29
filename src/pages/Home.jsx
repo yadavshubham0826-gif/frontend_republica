@@ -715,32 +715,32 @@ function TeamSection() {
 
      <div style={styles.wrapper}>
   <TeamCard
-    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FIsha_Yadav_President_eugnlb.jpg?alt=media&token=f709f052-ab18-47ed-9683-13b9a8a65cdf"
-    name="Isha Yadav"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2Fkaumudi.jpg?alt=media&token=8de74885-049d-46f9-aea8-49e93a23ece5"
+    name="Kaumudi Sharma"
     role="President"/>
   <TeamCard
-    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FDivyanshe_my2ao0.jpg?alt=media&token=69f7cd99-9500-4eb0-bb40-cc8cc70891a6"
-    name="Divyanshe"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FWebsite%20Lead%2FRizul.jpg?alt=media&token=8252add4-0f13-425b-b1d0-0923a75fa26d"
+    name="Rizul Rao"
     role="Treasurer"
   />
   <TeamCard
-    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FKhushi_VP_zmnvxd.jpg?alt=media&token=8184eed9-e3ea-4d8d-844d-db0358c4008a"
-    name="Khushi Iwanathe"
+    img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FRashi.JPG?alt=media&token=99932980-3324-4665-b5a5-2f265bfbc0b3"
+    name="Rashi"
     role="Vice President"
   />
   <TeamCard
-  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FKaumudi_General_Secretary_aqwayg.jpg?alt=media&token=168eb5ac-ad82-49be-8094-e95455a03e3a"
-  name="Kaumudi Sharma"
+  img=""
+  name="Arunima Tiwari"
   role="General Secretary"
   />
   <TeamCard
-  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FRashi_JS_n4dpcw.jpg?alt=media&token=382ef00b-5385-48ec-93e8-9a8f050c579c"
-  name="Rashi"
+  img=""
+  name="Eshika Sahu"
   role="Joint Secretary"
   />
    <TeamCard
-  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FVashu_vnjjtb.jpg?alt=media&token=ab1a60c6-6ff3-4a37-9e14-65544bd04c7e"
-  name="Vashu Yadav"
+  img="https://firebasestorage.googleapis.com/v0/b/drc-political-science.firebasestorage.app/o/Team%2FUnion%2FRiddhimaa.jpg?alt=media&token=5531ec03-95a7-4e80-a533-5f7df52351d0"
+  name="Riddhimaa Digpaul"
   role="Cultural Secretary"
   />
 </div>

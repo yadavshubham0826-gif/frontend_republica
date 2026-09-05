@@ -28,7 +28,9 @@ const nodemailer = require('nodemailer'); // For sending emails
 const connectDB = require(path.join(__dirname, 'config', 'database'));
 
 const { JSDOM } = require('jsdom'); // ✅ Import JSDOM for server-side DOM parsing
-
+function stripHtml(str = '') {
+  return str.replace(/<[^>]*>/g, '').trim();
+}
 // 3️⃣ Firebase Storage - Initialized after Admin SDK
 
 
@@ -1257,6 +1259,128 @@ app.post('/api/delete-flash', ensureAdmin, async (req, res) => {
   } catch (error) {
     console.error('Error deleting flash item:', error);
     res.status(500).json({ error: 'Internal server error while deleting flash item.' });
+  }
+});
+
+// ----------------------------
+// Public Get Site Notices Route
+// ----------------------------
+app.get('/api/notices', async (req, res) => {
+  try {
+    const noticesQuery = db.collection('siteNotices').orderBy('createdAt', 'desc');
+    const querySnapshot = await noticesQuery.get();
+    const notices = querySnapshot.docs.map(docSnap => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        ...data,
+        createdAt: data.createdAt?.toDate
+          ? data.createdAt.toDate().toISOString()
+          : null,
+      };
+    });
+    res.status(200).json(notices);
+  } catch (error) {
+    console.error('Error fetching site notices:', error);
+    res.status(500).json({ error: 'Internal server error while fetching notices.' });
+  }
+});
+
+// ----------------------------
+// Admin Add Site Notice Route
+// ----------------------------
+app.post('/api/add-notice', ensureAdmin, async (req, res) => {
+  const { title, body, linkUrl, photoURL, photoPath } = req.body;
+
+  if (!title || !title.trim()) {
+    return res.status(400).json({ error: 'Title is required.' });
+  }
+
+  if (!stripHtml(body) && !linkUrl && !photoURL) {
+    return res.status(400).json({ error: 'Main body must include text, a URL, or an image.' });
+  }
+
+  try {
+    let photoData = null;
+    if (photoURL) {
+      photoData = {
+        url: photoURL,
+        path: photoPath || extractPathFromFirebaseURL(photoURL) || '',
+      };
+    }
+
+    const noticeData = {
+      title: title.trim(),
+      body: (body || '').trim(),
+      linkUrl: (linkUrl || '').trim(),
+      photo: photoData,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    const docRef = await db.collection('siteNotices').add(noticeData);
+    console.log(`Admin '${req.user.email}' created new site notice with ID: ${docRef.id}`);
+    res.status(201).json({ success: true, message: 'Notice added successfully.', noticeId: docRef.id });
+  } catch (error) {
+    console.error('Error adding notice:', error);
+    res.status(500).json({ error: 'Internal server error while adding notice.' });
+  }
+});
+
+// ----------------------------
+// Admin Delete Site Notice Route
+// ----------------------------
+app.post('/api/delete-notice', ensureAdmin, async (req, res) => {
+  const { noticeId, photoPath } = req.body;
+
+  if (!noticeId) {
+    return res.status(400).json({ error: 'Notice ID is required.' });
+  }
+
+  try {
+    const noticeRef = db.collection('siteNotices').doc(noticeId);
+    const noticeSnapshot = await noticeRef.get();
+
+    if (!noticeSnapshot.exists) {
+      return res.status(404).json({ error: 'Notice not found.' });
+    }
+
+    const noticeData = noticeSnapshot.data();
+    const assetPaths = new Set();
+
+    const addAssetPath = (asset, fallbackPath) => {
+      if (fallbackPath) assetPaths.add(fallbackPath);
+      if (!asset) return;
+      if (typeof asset === 'string') {
+        assetPaths.add(extractPathFromFirebaseURL(asset) || asset);
+        return;
+      }
+      if (asset.path) {
+        assetPaths.add(asset.path);
+      } else if (asset.url) {
+        const extractedPath = extractPathFromFirebaseURL(asset.url);
+        if (extractedPath) assetPaths.add(extractedPath);
+      }
+    };
+
+    addAssetPath(noticeData.photo, photoPath);
+
+    if (assetPaths.size > 0) {
+      const deletionResults = await Promise.allSettled(
+        [...assetPaths].map(path => deleteFileFromFirebase(path))
+      );
+      const failedDeletes = deletionResults.filter(result => result.status === 'rejected');
+      if (failedDeletes.length > 0) {
+        console.error(`Failed to delete ${failedDeletes.length} notice asset(s).`, failedDeletes);
+        return res.status(500).json({ error: 'Could not delete all notice files. Metadata was not deleted.' });
+      }
+    }
+
+    await noticeRef.delete();
+    console.log(`Admin '${req.user.email}' deleted site notice with ID: ${noticeId}`);
+    res.status(200).json({ success: true, message: 'Notice deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting notice:', error);
+    res.status(500).json({ error: 'Internal server error while deleting notice.' });
   }
 });
 

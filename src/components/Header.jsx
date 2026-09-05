@@ -15,6 +15,7 @@ import AddNewsletterModal from './AddNewsletterModal';
 import AddPhotosModal from './AddPhotosModal'; // The only photo modal we need
 import AddNotificationModal from './AddNotificationModal';
 import ManageFlashModal from './ManageFlashModal';
+import ManageNoticeModal from './ManageNoticeModal';
 import { db } from '../firebase-config';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -31,6 +32,7 @@ const Header = () => {
   const [showAddPhotosModal, setShowAddPhotosModal] = useState(false);
   const [showAddNotificationModal, setShowAddNotificationModal] = useState(false);
   const [showManageFlashModal, setShowManageFlashModal] = useState(false);
+  const [showManageNoticeModal, setShowManageNoticeModal] = useState(false);
   const [newsletterToEdit, setNewsletterToEdit] = useState(null);
   const [latestJanmatName, setLatestJanmatName] = useState("Janmat'25");
 
@@ -268,6 +270,7 @@ const Header = () => {
                           <li><button className="logout-btn" onClick={(e) => { handleEditNewsletterClick(); handleNavClick(e); }}>Edit Latest Newsletter</button></li>
                           <li><button className="logout-btn" onClick={(e) => { setShowAddNotificationModal(true); handleNavClick(e); }}>Add In Notifications</button></li>
                           <li><button className="logout-btn" onClick={(e) => { setShowManageFlashModal(true); handleNavClick(e); }}>Add / Edit / Delete Flash</button></li>
+                          <li><button className="logout-btn" onClick={(e) => { setShowManageNoticeModal(true); handleNavClick(e); }}>Add/Delete Notice</button></li>
                           <li style={{ borderTop: '1px solid var(--border)', margin: '8px 0' }}><hr style={{border: 'none', height: '1px', backgroundColor: 'var(--border)'}}/></li>
                         </>
                       )}
@@ -348,6 +351,11 @@ const Header = () => {
             isOpen={showManageFlashModal}
             onClose={() => setShowManageFlashModal(false)}
             onFlashUpdated={() => window.location.reload()}
+          />
+          <ManageNoticeModal
+            isOpen={showManageNoticeModal}
+            onClose={() => setShowManageNoticeModal(false)}
+            onNoticeUpdated={() => window.dispatchEvent(new Event('site-notice-updated'))}
           />
         </>
       )}

@@ -2786,6 +2786,9 @@ h2[id], h1[id] {
 .flash-ticker-controls button:nth-child(2) { font-size: 1rem; }
 .flash-ticker-controls button:hover, .flash-ticker-controls button:focus-visible { color: #ffb21a; outline: none; }
 .manage-flash-modal { max-width: 1060px; }
+.manage-notice-modal { max-width: 1100px; }
+.manage-notice-modal .flash-manage-layout { grid-template-columns: 1fr; }
+.manage-notice-modal .flash-manage-items { max-height: 22vh; }
 .flash-manage-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr); gap: 2rem; }
 .flash-manage-list { min-width: 0; }
 .flash-manage-list h3, .flash-manage-form-section h3 { margin: 0 0 1rem; }
@@ -2802,6 +2805,64 @@ h2[id], h1[id] {
 .flash-attachment-option { display: inline-flex !important; align-items: center; gap: 0.35rem; margin: 0 !important; font-weight: 500 !important; }
 .flash-attachment-option input { width: auto !important; padding: 0 !important; }
 .flash-current-file, .flash-manage-empty { margin: 0.5rem 0 0; color: var(--muted); font-size: 0.9rem; }
+
+.site-notice-backdrop { z-index: 1100; }
+.site-notice-popup { max-width: 640px; }
+.site-notice-kicker {
+  margin: 0 0 0.35rem;
+  color: #1d4f91;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.site-notice-body {
+  line-height: 1.7;
+  margin: 0 0 1.25rem;
+  overflow-wrap: break-word;
+}
+.site-notice-body p { margin: 0 0 0.85rem; }
+.site-notice-body p:last-child { margin-bottom: 0; }
+.site-notice-body h1, .site-notice-body h2, .site-notice-body h3,
+.site-notice-body h4, .site-notice-body h5, .site-notice-body h6 {
+  margin: 0.85rem 0 0.5rem;
+}
+.site-notice-body ul, .site-notice-body ol { margin: 0 0 0.85rem; padding-left: 1.35rem; }
+.site-notice-body img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.75rem auto;
+}
+.site-notice-body img.img-shadow { box-shadow: 4px 4px 12px rgba(0,0,0,0.3); }
+.site-notice-body img.img-border { border: 2px solid #ccc; padding: 2px; }
+.site-notice-image-wrap {
+  width: min(400px, 88%);
+  aspect-ratio: 1;
+  margin: 0 auto 1.25rem;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+.site-notice-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.site-notice-link {
+  display: inline-block;
+  margin-bottom: 1.25rem;
+  color: #1d4f91;
+  font-weight: 600;
+}
+.site-notice-item-follow {
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.site-notice-item .modal-title {
+  margin-bottom: 0.75rem;
+}
 
 @media (max-width: 760px) {
   .flash-ticker { grid-template-columns: 1fr auto; min-height: 0; }

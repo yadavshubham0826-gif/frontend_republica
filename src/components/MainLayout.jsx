@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import SocialMediaSidebar from './SocialMediaSidebar';
+import SiteNoticePopup from './SiteNoticePopup';
 
 const MainLayout = ({ children }) => {
   const location = useLocation();
@@ -15,6 +16,7 @@ const MainLayout = ({ children }) => {
   return (
     <>
       <Header />
+      <SiteNoticePopup />
       {children}
       <SocialMediaSidebar />
       <Footer />

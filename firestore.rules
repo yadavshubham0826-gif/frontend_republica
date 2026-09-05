@@ -91,6 +91,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Site notices: Public read, admin write.
+    match /siteNotices/{noticeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Contact Submissions: Anyone can create. Only admins can read/delete.
     match /contactSubmissions/{messageId} {
       allow create: if true;

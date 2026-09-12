@@ -152,7 +152,7 @@ const Academics = () => {
           <span className="faculty-name">Dr. Malvika Singh <strong> (Association In Charge)</strong></span>
         </li>
         <li>
-          <span className="faculty-name">Dr. Shivali Agrawal</span>
+          <span className="faculty-name">Dr. Shivali Aggrawal</span>
         </li>
         <li>
           <span className="faculty-name">Dr. Nitesh Rai<strong> (Association In Charge)</strong></span>
